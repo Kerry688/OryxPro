@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "A modern printing press in action, showing vibrant colors and sharp details.",
+      "imageUrl": "https://picsum.photos/seed/hero1/1200/600",
+      "imageHint": "printing press"
+    },
+    {
+      "id": "business-card",
+      "description": "A stack of professionally designed business cards.",
+      "imageUrl": "https://picsum.photos/seed/bc1/600/400",
+      "imageHint": "business cards"
+    },
+    {
+      "id": "flyer",
+      "description": "A vibrant and eye-catching promotional flyer.",
+      "imageUrl": "https://picsum.photos/seed/fl1/600/400",
+      "imageHint": "event flyer"
+    },
+    {
+      "id": "banner",
+      "description": "A large, durable vinyl banner for outdoor advertising.",
+      "imageUrl": "https://picsum.photos/seed/bn1/600/400",
+      "imageHint": "vinyl banner"
+    },
+    {
+      "id": "poster",
+      "description": "A high-quality poster for an event.",
+      "imageUrl": "https://picsum.photos/seed/po1/600/400",
+      "imageHint": "concert poster"
+    },
+    {
+      "id": "brochure",
+      "description": "A tri-fold brochure with company information.",
+      "imageUrl": "https://picsum.photos/seed/br1/600/400",
+      "imageHint": "company brochure"
+    },
+    {
+      "id": "sticker",
+      "description": "A collection of custom-cut stickers.",
+      "imageUrl": "https://picsum.photos/seed/st1/600/400",
+      "imageHint": "logo stickers"
+    }
+  ]
 }
