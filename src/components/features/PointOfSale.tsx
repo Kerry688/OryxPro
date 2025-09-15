@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { products, type Product } from '@/lib/data';
 import { getImagePlaceholder } from '@/lib/placeholder-images';
@@ -51,6 +52,11 @@ export default function PointOfSale() {
   const { toast } = useToast();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const addToCart = (product: Product) => {
     setCart((currentCart) => {
@@ -99,6 +105,10 @@ export default function PointOfSale() {
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] bg-background text-foreground text-sm">
