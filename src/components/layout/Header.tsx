@@ -13,6 +13,7 @@ export function Header() {
   const navItems = [
     { href: '/products', label: 'Products' },
     { href: '/track-order', label: 'Track Order' },
+    { href: '/pos', label: 'POS' },
   ];
 
   return (
