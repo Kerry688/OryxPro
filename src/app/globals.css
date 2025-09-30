@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent content overflow */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
 @layer base {
   :root {
     --background: 0 0% 96.1%;
@@ -40,13 +55,13 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 240 8% 6%;
+    --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -85,7 +100,7 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 240 8% 6%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -100,7 +115,364 @@
   * {
     @apply border-border;
   }
+  
+  html {
+    overflow-x: hidden;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-variant-numeric: tabular-nums;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+  
+  /* Enhanced typography for better readability */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline font-semibold tracking-tight;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  
+  /* Improved text rendering */
+  p, span, div {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  
+  /* Better button and form text */
+  button, input, textarea, select {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+}
+
+/* RTL Support */
+@layer utilities {
+  /* RTL-specific spacing utilities */
+  .rtl\:space-x-reverse > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+  }
+  
+  .rtl\:space-y-reverse > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 1;
+  }
+  
+  /* RTL text alignment */
+  [dir="rtl"] {
+    text-align: right;
+  }
+  
+  [dir="ltr"] {
+    text-align: left;
+  }
+  
+  /* Prevent horizontal scroll globally */
+  * {
+    box-sizing: border-box;
+  }
+  
+  /* Root layout constraints */
+  html, body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Ensure all containers respect viewport width */
+  .container, .container-fluid {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Prevent horizontal scroll on flex containers */
+  .flex {
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  /* Ensure grid containers don't overflow */
+  .grid {
+    max-width: 100%;
+  }
+  
+  /* Force all elements to respect viewport width */
+  div, section, article, main, header, footer, nav, aside {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Prevent any element from exceeding viewport */
+  * {
+    max-width: 100%;
+  }
+  
+  /* Additional layout constraints */
+  .w-full {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  
+  .max-w-full {
+    max-width: 100vw !important;
+  }
+  
+  /* Ensure flex items don't overflow */
+  .flex > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  /* Force all containers to respect viewport */
+  .container, .container-fluid, .container-sm, .container-md, .container-lg, .container-xl, .container-2xl {
+    max-width: 100vw !important;
+    width: 100% !important;
+  }
+  
+  /* Additional overflow prevention */
+  .grid {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  .flex {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Force all page content to respect viewport */
+  main, section, article, div {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Ensure no element can exceed viewport */
+  * {
+    max-width: 100vw !important;
+  }
+  
+  /* Additional layout constraints for better responsiveness */
+  .container {
+    max-width: 100vw !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Ensure flex containers don't overflow */
+  .flex {
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Ensure grid containers don't overflow */
+  .grid {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Force all layout containers to respect viewport */
+  header, footer, nav, aside, main {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* RTL-specific margins and padding */
+  [dir="rtl"] .rtl\:ml-auto {
+    margin-left: auto;
+  }
+  
+  [dir="rtl"] .rtl\:mr-auto {
+    margin-right: auto;
+  }
+  
+  /* RTL flexbox utilities */
+  [dir="rtl"] .rtl\:flex-row-reverse {
+    flex-direction: row-reverse;
+  }
+  
+  [dir="rtl"] .rtl\:justify-start {
+    justify-content: flex-start;
+  }
+  
+  [dir="rtl"] .rtl\:justify-end {
+    justify-content: flex-end;
+  }
+  
+  /* RTL border utilities */
+  [dir="rtl"] .rtl\:border-r {
+    border-right-width: 1px;
+  }
+  
+  [dir="rtl"] .rtl\:border-l {
+    border-left-width: 1px;
+  }
+  
+  /* RTL positioning utilities */
+  [dir="rtl"] .rtl\:left-0 {
+    left: 0;
+  }
+  
+  [dir="rtl"] .rtl\:right-0 {
+    right: 0;
+  }
+  
+  /* RTL transform utilities */
+  [dir="rtl"] .rtl\:translate-x-full {
+    transform: translateX(100%);
+  }
+  
+  [dir="rtl"] .rtl\:-translate-x-full {
+    transform: translateX(-100%);
+  }
+  
+  /* COMPLETELY RESET all scrollbar styles globally */
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+  
+  *::-webkit-scrollbar {
+    width: auto;
+    height: auto;
+  }
+  
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+  
+  *::-webkit-scrollbar-thumb:hover {
+    background: transparent;
+  }
+
+  /* ONLY apply custom scrollbar styles to sidebar navigation */
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 6px !important;
+  }
+  
+  .sidebar-scrollbar::-webkit-scrollbar-track {
+    background: #0D0E12 !important;
+    border-radius: 3px;
+  }
+  
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background: #475569 !important;
+    border-radius: 3px;
+  }
+  
+  .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #64748b !important;
+  }
+  
+  /* Firefox scrollbar styles ONLY for sidebar */
+  .sidebar-scrollbar {
+    scrollbar-width: thin !important;
+    scrollbar-color: #475569 #0D0E12 !important;
+  }
+
+  /* Completely hide scrollbars for elements that shouldn't have them */
+  .no-scrollbar,
+  .no-scrollbar *,
+  h1, h2, h3, h4, h5, h6,
+  .card-title,
+  .card-header,
+  button,
+  .btn,
+  .badge,
+  .header,
+  [role="button"],
+  /* Shadcn UI specific classes */
+  [data-radix-scroll-area-viewport],
+  [data-radix-scroll-area-content],
+  .scroll-area,
+  /* Card components */
+  .card,
+  .card-content,
+  /* Button components */
+  .button,
+  .button-content,
+  /* Badge components */
+  .badge-content,
+  /* Specific Shadcn components used in the page */
+  .card-header,
+  .card-title,
+  .card-description,
+  .badge,
+  .btn,
+  /* All flex containers */
+  .flex,
+  .flex *,
+  /* All span elements */
+  span,
+  span * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar,
+  .no-scrollbar *::-webkit-scrollbar,
+  h1::-webkit-scrollbar,
+  h2::-webkit-scrollbar,
+  h3::-webkit-scrollbar,
+  h4::-webkit-scrollbar,
+  h5::-webkit-scrollbar,
+  h6::-webkit-scrollbar,
+  .card-title::-webkit-scrollbar,
+  .card-header::-webkit-scrollbar,
+  button::-webkit-scrollbar,
+  .btn::-webkit-scrollbar,
+  .badge::-webkit-scrollbar,
+  .header::-webkit-scrollbar,
+  [role="button"]::-webkit-scrollbar,
+  /* Shadcn UI specific classes */
+  [data-radix-scroll-area-viewport]::-webkit-scrollbar,
+  [data-radix-scroll-area-content]::-webkit-scrollbar,
+  .scroll-area::-webkit-scrollbar,
+  .scroll-area *::-webkit-scrollbar,
+  /* Card components */
+  .card::-webkit-scrollbar,
+  .card *::-webkit-scrollbar,
+  .card-content::-webkit-scrollbar,
+  .card-content *::-webkit-scrollbar,
+  /* Button components */
+  .button::-webkit-scrollbar,
+  .button *::-webkit-scrollbar,
+  .button-content::-webkit-scrollbar,
+  .button-content *::-webkit-scrollbar,
+  /* Badge components */
+  .badge-content::-webkit-scrollbar,
+  .badge-content *::-webkit-scrollbar,
+  /* Specific Shadcn components used in the page */
+  .card-header::-webkit-scrollbar,
+  .card-title::-webkit-scrollbar,
+  .card-description::-webkit-scrollbar,
+  .badge::-webkit-scrollbar,
+  .btn::-webkit-scrollbar,
+  /* All flex containers */
+  .flex::-webkit-scrollbar,
+  .flex *::-webkit-scrollbar,
+  /* All span elements */
+  span::-webkit-scrollbar,
+  span *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Force dialog width constraints */
+  [data-radix-dialog-content] {
+    max-width: 672px !important; /* max-w-2xl equivalent */
+    width: auto !important;
+  }
+
+  [data-radix-dialog-content].max-w-3xl {
+    max-width: 768px !important; /* max-w-3xl equivalent */
+  }
+
+  [data-radix-dialog-content].max-w-lg {
+    max-width: 512px !important; /* max-w-lg equivalent */
   }
 }

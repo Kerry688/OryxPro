@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ClientOnlyLayout } from '@/components/layout/ClientOnlyLayout';
 
 export const metadata: Metadata = {
-  title: 'PrintPoint - Your On-Demand Printing Partner',
+  title: 'Oryx ONE',
   description: 'High-quality printing services for business cards, flyers, banners, and more. Customize and order online with PrintPoint.',
 };
 
@@ -20,20 +20,28 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body
         className={cn(
-          'min-h-screen bg-background font-body antialiased'
+          'min-h-screen w-full font-body antialiased overflow-x-hidden bg-[#FCFCFC]'
         )}
+        style={{ 
+          width: '100%', 
+          maxWidth: '100%', 
+          overflowX: 'hidden',
+          margin: 0,
+          padding: 0
+        }}
+        suppressHydrationWarning
       >
-        <div className="relative flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
-        <Toaster />
+        <AuthProvider>
+          <ClientOnlyLayout>
+            {children}
+          </ClientOnlyLayout>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

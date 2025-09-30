@@ -1,8 +1,7 @@
 'use client';
 
 import { CheckCircle, Circle, CircleDot, Truck } from 'lucide-react';
-import type { Order, OrderStatus } from '@/lib/data';
-import { orderStatuses } from '@/lib/data';
+import type { Order, LegacyOrderStatus } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
@@ -11,7 +10,15 @@ type OrderStatusTrackerProps = {
   order: Order;
 };
 
-const statusIcons: Record<OrderStatus, JSX.Element> = {
+// Define the order statuses array locally since it's not exported from data.ts
+const orderStatuses: LegacyOrderStatus[] = [
+  'Order Confirmed',
+  'In Production', 
+  'Shipped',
+  'Delivered'
+];
+
+const statusIcons: Record<LegacyOrderStatus, JSX.Element> = {
     'Order Confirmed': <CheckCircle />,
     'In Production': <CircleDot />,
     'Shipped': <Truck />,

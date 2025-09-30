@@ -3,8 +3,8 @@ import { Printer } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="w-full bg-card border-t">
-      <div className="container mx-auto px-4 md:px-6 py-8">
+    <footer className="w-full max-w-full bg-card border-t overflow-x-hidden">
+      <div className="container mx-auto px-4 md:px-6 py-8 w-full max-w-full overflow-x-hidden">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
             <Printer className="h-6 w-6 text-primary" />
