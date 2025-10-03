@@ -10,7 +10,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, Package, Shield, Clock, Wrench } from 'lucide-react';
 import { getImagePlaceholder } from '@/lib/placeholder-images';
 
 type ProductCardProps = {
@@ -37,6 +38,47 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardContent className="flex-grow">
         <CardTitle className="text-xl font-headline">{product.name}</CardTitle>
         <CardDescription className="mt-2">{product.description}</CardDescription>
+        
+        {/* Product Details */}
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600">Price:</span>
+            <span className="font-medium">${product.basePrice}</span>
+          </div>
+          
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600">Unit:</span>
+            <span className="font-medium">{product.unitOfMeasure}</span>
+          </div>
+          
+          {product.warrantyPeriod && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Warranty:</span>
+              <span className="font-medium">{product.warrantyPeriod} months</span>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant={product.trackingType === 'none' ? 'secondary' : 'default'}>
+              {product.trackingType === 'none' ? 'No Tracking' : 
+               product.trackingType === 'serial' ? 'Serial' : 'Batch'}
+            </Badge>
+            
+            {product.isService && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Wrench className="h-3 w-3" />
+                Service
+              </Badge>
+            )}
+            
+            {product.warrantyPeriod && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Shield className="h-3 w-3" />
+                Warranty
+              </Badge>
+            )}
+          </div>
+        </div>
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">

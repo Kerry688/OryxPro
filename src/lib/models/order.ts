@@ -1,75 +1,103 @@
 import { Document, ObjectId } from 'mongodb';
 
-export interface Order extends Document {
-  _id?: ObjectId;
-  orderNumber: string;
-  customerId: ObjectId;
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
-  status: 'pending' | 'confirmed' | 'in_production' | 'completed' | 'shipped' | 'delivered' | 'cancelled';
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  orderDate: Date;
-  dueDate?: Date;
-  completedDate?: Date;
-  totalAmount: number;
-  paidAmount: number;
-  balance: number;
-  paymentStatus: 'pending' | 'partial' | 'paid' | 'overdue';
-  paymentMethod?: 'cash' | 'card' | 'bank_transfer' | 'check' | 'credit';
-  items: OrderItem[];
-  notes?: string;
-  branchId: ObjectId;
-  createdBy: ObjectId;
-  assignedTo?: ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type OrderSource = 'pos' | 'online' | 'phone' | 'email' | 'walk-in' | 'sales-rep';
 
 export interface OrderItem {
-  _id?: ObjectId;
-  productId: ObjectId;
+  id: string;
   productName: string;
-  productSku: string;
+  productCode: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
-  status: 'pending' | 'in_production' | 'completed' | 'cancelled';
+  category: string;
+  brand: string;
+}
+
+export interface Payment {
+  method: 'cash' | 'card' | 'mobile' | 'bank_transfer';
+  amount: number;
+  transactionId?: string;
+  status: 'completed' | 'pending' | 'failed';
+  processedAt?: Date;
+}
+
+export interface Order extends Document {
+  _id?: ObjectId;
+  orderNumber: string;
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  payment: Payment;
+  status: 'pending' | 'completed' | 'cancelled' | 'refunded';
+  orderDate: Date;
+  completedAt?: Date;
   notes?: string;
-  printSettings?: {
-    resolution: number;
-    colorMode: 'color' | 'black_white';
-    paperType: string;
-    copies: number;
+  cashierId: string;
+  cashierName: string;
+  branchId: string;
+  branchName: string;
+  source: OrderSource;
+  sourceDetails?: {
+    channel?: string; // For online orders: website, mobile app, etc.
+    salesRepId?: string; // For sales rep orders
+    salesRepName?: string;
+    phoneNumber?: string; // For phone orders
+    emailAddress?: string; // For email orders
   };
 }
 
 export interface CreateOrderData {
-  customerId: ObjectId;
-  customerName: string;
-  customerEmail: string;
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
   customerPhone?: string;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  dueDate?: Date;
-  items: Omit<OrderItem, '_id' | 'productName' | 'productSku' | 'totalPrice'>[];
+  items: OrderItem[];
+  subtotal: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  paymentMethod: string;
+  status: string;
+  cashierId: string;
+  cashierName: string;
+  branchId: string;
+  branchName: string;
   notes?: string;
-  branchId: ObjectId;
-  createdBy: ObjectId;
-  assignedTo?: ObjectId;
+  source: OrderSource;
+  sourceDetails?: {
+    channel?: string;
+    salesRepId?: string;
+    salesRepName?: string;
+    phoneNumber?: string;
+    emailAddress?: string;
+  };
 }
 
 export interface UpdateOrderData {
-  status?: 'pending' | 'confirmed' | 'in_production' | 'completed' | 'shipped' | 'delivered' | 'cancelled';
-  priority?: 'low' | 'normal' | 'high' | 'urgent';
-  dueDate?: Date;
-  completedDate?: Date;
-  totalAmount?: number;
-  paidAmount?: number;
-  balance?: number;
-  paymentStatus?: 'pending' | 'partial' | 'paid' | 'overdue';
-  paymentMethod?: 'cash' | 'card' | 'bank_transfer' | 'check' | 'credit';
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
   items?: OrderItem[];
+  subtotal?: number;
+  tax?: number;
+  discount?: number;
+  total?: number;
+  payment?: Payment;
+  status?: 'pending' | 'completed' | 'cancelled' | 'refunded';
   notes?: string;
-  assignedTo?: ObjectId;
+  source?: OrderSource;
+  sourceDetails?: {
+    channel?: string;
+    salesRepId?: string;
+    salesRepName?: string;
+    phoneNumber?: string;
+    emailAddress?: string;
+  };
 }
-

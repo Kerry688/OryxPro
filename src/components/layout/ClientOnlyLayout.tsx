@@ -13,7 +13,7 @@ interface ClientOnlyLayoutProps {
   children: React.ReactNode;
 }
 
-export function ClientOnlyLayout({ children }: ClientOnlyLayoutProps) {
+export default function ClientOnlyLayout({ children }: ClientOnlyLayoutProps) {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
   

@@ -15,7 +15,7 @@ export function MainContent({ children }: MainContentProps) {
   return (
     <div
       className={cn(
-        "flex-1 flex flex-col transition-all duration-300 min-h-screen bg-[#FCFCFC] main-content",
+        "flex-1 flex flex-col transition-all duration-300 min-h-screen bg-[#F1F1F1] main-content",
         // Desktop: adjust margin based on sidebar state and direction
         isRTL 
           ? (isCollapsed ? "lg:mr-20" : "lg:mr-64")

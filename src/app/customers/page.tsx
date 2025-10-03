@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,10 +39,13 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { customers, branches, users } from '@/lib/data';
-import type { Customer, CustomerType, CustomerStatus, Branch } from '@/lib/data';
+import { branches, users } from '@/lib/data';
+import type { Branch } from '@/lib/data';
+import type { Customer } from '@/lib/models/customer';
 
 export default function CustomerManagementPage() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -50,15 +53,42 @@ export default function CustomerManagementPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
+  // Fetch customers from API
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/customers');
+      const result = await response.json();
+      
+      if (result.success) {
+        setCustomers(result.data);
+      } else {
+        console.error('Failed to fetch customers:', result.error);
+        // Fallback to empty array
+        setCustomers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      setCustomers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load customers on component mount
+  React.useEffect(() => {
+    fetchCustomers();
+  }, []);
+
   // Filter customers
   const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = customer.customerNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = customer.customerCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (customer.companyName && customer.companyName.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (customer.firstName && customer.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (customer.lastName && customer.lastName.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesType = selectedType === 'all' || customer.type === selectedType;
+    const matchesType = selectedType === 'all' || customer.customerType === selectedType;
     const matchesStatus = selectedStatus === 'all' || customer.status === selectedStatus;
     const matchesBranch = selectedBranch === 'all' || customer.branchId === selectedBranch;
 
@@ -75,7 +105,7 @@ export default function CustomerManagementPage() {
     return `${customer.firstName?.[0] || ''}${customer.lastName?.[0] || ''}`.toUpperCase();
   };
 
-  const getTypeColor = (type: CustomerType) => {
+  const getTypeColor = (type: string) => {
     switch (type) {
       case 'business':
         return 'bg-blue-100 text-blue-800';
@@ -90,7 +120,7 @@ export default function CustomerManagementPage() {
     }
   };
 
-  const getStatusColor = (status: CustomerStatus) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800';
@@ -144,7 +174,10 @@ export default function CustomerManagementPage() {
               onClose={() => {
                 setIsEditDialogOpen(false);
                 setSelectedCustomer(null);
-              }} 
+              }}
+              onSuccess={() => {
+                fetchCustomers(); // Refresh the customers list
+              }}
             />
           </DialogContent>
         </Dialog>
@@ -340,7 +373,7 @@ export default function CustomerManagementPage() {
                     const salesRep = getSalesRep(customer.assignedSalesRep);
                     
                     return (
-                      <TableRow key={customer.id}>
+                      <TableRow key={customer._id?.toString() || customer.customerCode}>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
@@ -351,7 +384,7 @@ export default function CustomerManagementPage() {
                                 {customer.companyName || `${customer.firstName} ${customer.lastName}`}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {customer.customerNumber} • {customer.email}
+                                {customer.customerCode} • {customer.email}
                               </div>
                               {branch && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -363,8 +396,8 @@ export default function CustomerManagementPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getTypeColor(customer.type)}>
-                            {customer.type}
+                          <Badge className={getTypeColor(customer.customerType)}>
+                            {customer.customerType}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -377,7 +410,7 @@ export default function CustomerManagementPage() {
                             ${customer.currentBalance.toLocaleString()}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Available: ${customer.availableCredit.toLocaleString()}
+                            Available: ${(customer.creditLimit - customer.currentBalance).toLocaleString()}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -385,7 +418,7 @@ export default function CustomerManagementPage() {
                             ${customer.creditLimit.toLocaleString()}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {customer.paymentTerms.replace('_', ' ')}
+                            {customer.paymentTerms} days
                           </div>
                         </TableCell>
                         <TableCell>
@@ -472,14 +505,14 @@ export default function CustomerManagementPage() {
                   </TableHeader>
                 <TableBody>
                   {filteredCustomers.map(customer => (
-                    <TableRow key={customer.id}>
+                    <TableRow key={customer._id?.toString() || customer.customerCode}>
                       <TableCell>
                         <div>
                           <div className="font-medium">
                             {customer.companyName || `${customer.firstName} ${customer.lastName}`}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {customer.customerNumber}
+                            {customer.customerCode}
                           </div>
                         </div>
                       </TableCell>
@@ -495,10 +528,10 @@ export default function CustomerManagementPage() {
                       </TableCell>
                       <TableCell>
                         <div className="font-medium text-green-600">
-                          ${customer.availableCredit.toLocaleString()}
+                          ${(customer.creditLimit - customer.currentBalance).toLocaleString()}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {((customer.availableCredit / customer.creditLimit) * 100).toFixed(0)}% available
+                          {customer.creditLimit > 0 ? (((customer.creditLimit - customer.currentBalance) / customer.creditLimit) * 100).toFixed(0) : 0}% available
                         </div>
                       </TableCell>
                       <TableCell>
@@ -508,7 +541,7 @@ export default function CustomerManagementPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {customer.paymentTerms.replace('_', ' ')}
+                          {customer.paymentTerms} days
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -516,7 +549,7 @@ export default function CustomerManagementPage() {
                           <div>
                             <div className="text-sm">{new Date(customer.lastPaymentDate).toLocaleDateString()}</div>
                             <div className="text-xs text-muted-foreground">
-                              ${customer.lastPaymentAmount?.toLocaleString()}
+                              ${customer.totalPaid?.toLocaleString() || '0'}
                             </div>
                           </div>
                         ) : (
@@ -553,13 +586,13 @@ export default function CustomerManagementPage() {
               <CardContent>
                 <div className="space-y-3">
                   {['business', 'individual', 'government', 'nonprofit'].map(type => {
-                    const count = customers.filter(c => c.type === type).length;
-                    const percentage = (count / customers.length) * 100;
+                    const count = customers.filter(c => c.customerType === type).length;
+                    const percentage = customers.length > 0 ? (count / customers.length) * 100 : 0;
                     
                     return (
                       <div key={type} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Badge className={getTypeColor(type as CustomerType)}>
+                          <Badge className={getTypeColor(type)}>
                             {type}
                           </Badge>
                         </div>
@@ -583,10 +616,10 @@ export default function CustomerManagementPage() {
               <CardContent>
                 <div className="space-y-3">
                   {customers
-                    .sort((a, b) => b.totalInvoiced - a.totalInvoiced)
+                    .sort((a, b) => b.totalSpent - a.totalSpent)
                     .slice(0, 5)
                     .map(customer => (
-                      <div key={customer.id} className="flex items-center justify-between">
+                      <div key={customer._id?.toString() || customer.customerCode} className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">
                             {customer.companyName || `${customer.firstName} ${customer.lastName}`}
@@ -597,10 +630,10 @@ export default function CustomerManagementPage() {
                         </div>
                         <div className="text-right">
                           <div className="font-medium">
-                            ${customer.totalInvoiced.toLocaleString()}
+                            ${customer.totalSpent.toLocaleString()}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            ${customer.averageOrderValue.toLocaleString()} avg
+                            ${customer.totalSpent > 0 && customer.totalOrders > 0 ? (customer.totalSpent / customer.totalOrders).toLocaleString() : '0'} avg
                           </div>
                         </div>
                       </div>
@@ -616,8 +649,9 @@ export default function CustomerManagementPage() {
 }
 
 // Customer Form Component
-function CustomerForm({ customer, onClose }: { customer: Customer | null; onClose: () => void }) {
+function CustomerForm({ customer, onClose, onSuccess }: { customer: Customer | null; onClose: () => void; onSuccess?: () => void }) {
   const [formData, setFormData] = useState({
+    customerCode: customer?.customerCode || '',
     type: customer?.type || 'individual',
     status: customer?.status || 'active',
     firstName: customer?.firstName || '',
@@ -654,10 +688,85 @@ function CustomerForm({ customer, onClose }: { customer: Customer | null; onClos
     tags: customer?.tags.join(', ') || '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Saving customer:', formData);
-    onClose();
+    setIsSubmitting(true);
+
+    try {
+      // Generate customer code if not provided
+      const customerCode = formData.customerCode || `CUST-${Date.now()}`;
+      
+      // Prepare customer data for API
+      const customerData = {
+        customerCode,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        companyName: formData.companyName || undefined,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        address: {
+          street: formData.billingStreet,
+          city: formData.billingCity,
+          state: formData.billingState,
+          zipCode: formData.billingZipCode,
+          country: formData.billingCountry
+        },
+        billingAddress: formData.shippingStreet ? {
+          street: formData.shippingStreet,
+          city: formData.shippingCity,
+          state: formData.shippingState,
+          zipCode: formData.shippingZipCode,
+          country: formData.shippingCountry
+        } : undefined,
+        customerType: formData.type === 'individual' ? 'individual' : 'business',
+        creditLimit: formData.creditLimit || 0,
+        paymentTerms: formData.paymentTerms === 'custom' ? formData.customPaymentTerms : 
+          formData.paymentTerms === 'due_on_receipt' ? 0 :
+          formData.paymentTerms === 'net_15' ? 15 :
+          formData.paymentTerms === 'net_30' ? 30 :
+          formData.paymentTerms === 'net_45' ? 45 :
+          formData.paymentTerms === 'net_60' ? 60 : 30,
+        notes: formData.notes || undefined,
+        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
+      };
+
+      console.log('Submitting customer data:', customerData);
+
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customerData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create customer');
+      }
+
+      console.log('Customer created successfully:', result);
+      
+      // Show success message (you might want to use a toast notification here)
+      alert('Customer created successfully!');
+      
+      // Close the form
+      onClose();
+      
+      // Refresh the customers list
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      alert(`Error creating customer: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -671,6 +780,16 @@ function CustomerForm({ customer, onClose }: { customer: Customer | null; onClos
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4">
+          <div>
+            <Label htmlFor="customerCode">Customer Code</Label>
+            <Input
+              id="customerCode"
+              value={formData.customerCode}
+              onChange={(e) => setFormData({ ...formData, customerCode: e.target.value })}
+              placeholder="Auto-generated if empty"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Customer Type</Label>
@@ -1024,11 +1143,11 @@ function CustomerForm({ customer, onClose }: { customer: Customer | null; onClos
       </Tabs>
 
       <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onClose}>
+        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button type="submit">
-          {customer ? 'Update Customer' : 'Create Customer'}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Creating...' : (customer ? 'Update Customer' : 'Create Customer')}
         </Button>
       </div>
     </form>

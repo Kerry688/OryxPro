@@ -29,7 +29,12 @@ export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db
   }
 
   if (!cached.promise) {
-    cached.promise = MongoClient.connect(MONGODB_URI).then((client) => {
+    cached.promise = MongoClient.connect(MONGODB_URI, {
+      // Disable client-side encryption to avoid browser compatibility issues
+      autoEncryption: undefined,
+      // Disable other Node.js specific features
+      monitorCommands: false,
+    }).then((client) => {
       return {
         client,
         db: client.db(DB_NAME),

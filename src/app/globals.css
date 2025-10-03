@@ -17,6 +17,56 @@ body {
   padding: 0;
 }
 
+/* Enhanced focus styles for better UX */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+textarea,
+select {
+  transition: all 0.2s ease-in-out;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: hsl(var(--ring)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2) !important;
+  border-radius: 0.375rem !important;
+}
+
+/* Ensure focus ring appears all around for all input elements */
+.focus\:ring-2:focus,
+.focus-visible\:ring-2:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px hsl(var(--ring)) !important;
+}
+
+/* Override any ring-offset that might push the ring outside */
+.focus\:ring-offset-2:focus,
+.focus-visible\:ring-offset-2:focus-visible {
+  box-shadow: 0 0 0 2px hsl(var(--ring)) !important;
+}
+
+/* Focus-within styling for containers */
+.focus-within\:ring-2:focus-within {
+  box-shadow: 0 0 0 2px hsl(var(--ring)) !important;
+}
+
+.focus-within\:ring-blue-500:focus-within {
+  box-shadow: 0 0 0 2px #3b82f6 !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 96.1%;

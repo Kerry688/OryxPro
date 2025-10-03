@@ -20,6 +20,10 @@ export async function connectToMongoDB(): Promise<Db> {
     client = new MongoClient(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
       connectTimeoutMS: 10000,
+      // Disable client-side encryption to avoid browser compatibility issues
+      autoEncryption: undefined,
+      // Disable other Node.js specific features
+      monitorCommands: false,
     });
 
     await client.connect();

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { X, Plus } from 'lucide-react';
 import { KitBundleManager } from './KitBundleManager';
-import { Product, ProductType } from '@/lib/models/product';
+import { Product, ProductType, TrackingType } from '@/lib/models/product';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -37,6 +37,12 @@ export function ProductForm({ product, onSubmit, onCancel, productTypes }: Produ
     images: [] as string[],
     tags: [] as string[],
     isActive: true,
+    
+    // New tracking and service fields
+    trackingType: 'none' as TrackingType,
+    warrantyPeriod: undefined as number | undefined,
+    unitOfMeasure: 'pcs',
+    isService: false,
     
     // Sales Product fields
     price: 0,
@@ -395,6 +401,59 @@ export function ProductForm({ product, onSubmit, onCancel, productTypes }: Produ
             </ComboboxItem>
           ))}
         </Combobox>
+      </div>
+
+      {/* New tracking and service fields */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="trackingType">Tracking Type</Label>
+          <Select 
+            value={formData.trackingType} 
+            onValueChange={(value) => setFormData({ ...formData, trackingType: value as TrackingType })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select tracking type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              <SelectItem value="serial">Serial Number</SelectItem>
+              <SelectItem value="batch">Batch/Lot Number</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="unitOfMeasure">Unit of Measure</Label>
+          <Input
+            id="unitOfMeasure"
+            value={formData.unitOfMeasure}
+            onChange={(e) => setFormData({ ...formData, unitOfMeasure: e.target.value })}
+            placeholder="e.g., pcs, kg, m, hrs, sqm"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="warrantyPeriod">Warranty Period (months)</Label>
+          <Input
+            id="warrantyPeriod"
+            type="number"
+            value={formData.warrantyPeriod || ''}
+            onChange={(e) => setFormData({ 
+              ...formData, 
+              warrantyPeriod: e.target.value ? parseInt(e.target.value) : undefined 
+            })}
+            placeholder="Optional warranty period"
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="isService"
+            checked={formData.isService}
+            onCheckedChange={(checked) => setFormData({ ...formData, isService: checked })}
+          />
+          <Label htmlFor="isService">Is Service Item</Label>
+        </div>
       </div>
 
       <div className="flex items-center space-x-2">

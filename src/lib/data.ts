@@ -41,6 +41,9 @@ export type Supplier = {
 // Product Types
 export type ProductType = 'sale_item' | 'print_item' | 'service_item' | 'bundle';
 
+// Tracking Types
+export type TrackingType = 'none' | 'serial' | 'batch';
+
 // Print Specifications
 export type PrintSpecification = {
   id: string;
@@ -121,6 +124,12 @@ export type Product = {
   
   // Product Type specific fields
   type: ProductType;
+  
+  // New tracking and service fields
+  trackingType: TrackingType; // How the product is tracked (none, serial, batch)
+  warrantyPeriod?: number; // Warranty period in months (optional)
+  unitOfMeasure: string; // Unit of measure (e.g., 'pcs', 'kg', 'm', 'hrs', 'sqm')
+  isService: boolean; // Whether this is a service item (like repair labor)
   
   // Print Item specific fields
   printSpecifications?: PrintSpecification[];
@@ -818,6 +827,10 @@ export const products: Product[] = [
       height: 0.01,
     },
     type: 'print_item',
+    trackingType: 'none',
+    warrantyPeriod: undefined,
+    unitOfMeasure: 'pcs',
+    isService: false,
     printSpecifications: [
       {
         id: 'print_spec_001',
@@ -1057,6 +1070,10 @@ export const products: Product[] = [
       height: 1.0,
     },
     type: 'sale_item',
+    trackingType: 'batch',
+    warrantyPeriod: 12,
+    unitOfMeasure: 'pcs',
+    isService: false,
     options: [
       {
         id: 'pen_color',
@@ -1098,6 +1115,10 @@ export const products: Product[] = [
     isActive: true,
     isDigital: true,
     type: 'service_item',
+    trackingType: 'none',
+    warrantyPeriod: undefined,
+    unitOfMeasure: 'hrs',
+    isService: true,
     serviceSpecifications: [
       {
         id: 'service_spec_001',

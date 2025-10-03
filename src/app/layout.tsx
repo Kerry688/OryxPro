@@ -3,7 +3,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ClientOnlyLayout } from '@/components/layout/ClientOnlyLayout';
+import ClientOnlyLayout from '@/components/layout/ClientOnlyLayout';
 
 export const metadata: Metadata = {
   title: 'Oryx ONE',

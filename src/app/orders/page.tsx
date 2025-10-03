@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,26 +62,114 @@ import {
   Settings,
   Globe
 } from 'lucide-react';
-import { salesOrders, orderStatusHistory, orderComments, orderTemplates } from '@/lib/data';
-import type { SalesOrder, SalesOrderStatus, SalesOrderPriority, SalesOrderSource } from '@/lib/data';
+import { orderStatusHistory, orderComments, orderTemplates } from '@/lib/data';
+import type { SalesOrderStatus, SalesOrderPriority, SalesOrderSource } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+
+// Database Order Interface
+interface DatabaseOrder {
+  _id: string;
+  orderNumber: string;
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  items: Array<{
+    id: string;
+    productId: string;
+    productName: string;
+    productCode: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    category: string;
+    brand: string;
+  }>;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  payment: {
+    method: string;
+    amount: number;
+    transactionId?: string;
+    status: string;
+    processedAt?: Date;
+  };
+  status: string;
+  orderDate: Date;
+  completedAt?: Date;
+  notes?: string;
+  internalNotes?: string;
+  cashierId: string;
+  cashierName: string;
+  branchId: string;
+  branchName: string;
+  source: string;
+  sourceDetails?: any;
+  paymentTerms?: number;
+  promotionId?: string;
+  shippingMethod?: string;
+  shippingAddress?: any;
+  priority?: string;
+  requiredDate?: Date;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export default function OrdersPage() {
+  const { toast } = useToast();
+  const [orders, setOrders] = useState<DatabaseOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<SalesOrderStatus | 'all'>('all');
   const [selectedPriority, setSelectedPriority] = useState<SalesOrderPriority | 'all'>('all');
   const [selectedSource, setSelectedSource] = useState<SalesOrderSource | 'all'>('all');
   const [selectedDateRange, setSelectedDateRange] = useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<DatabaseOrder | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+
+  // Fetch orders from database
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/orders');
+      const result = await response.json();
+      if (result.success) {
+        setOrders(result.data);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to fetch orders",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast({
+        title: "Network Error",
+        description: "Failed to fetch orders. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load orders on component mount
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   // Filter orders based on search and filters
   const filteredOrders = useMemo(() => {
-    return salesOrders.filter(order => {
+    return orders.filter(order => {
       const matchesSearch = 
         order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer?.email.toLowerCase().includes(searchTerm.toLowerCase());
+        (order.customerName && order.customerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (order.customerEmail && order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus;
       const matchesPriority = selectedPriority === 'all' || order.priority === selectedPriority;
@@ -111,22 +199,22 @@ export default function OrdersPage() {
       
       return matchesSearch && matchesStatus && matchesPriority && matchesSource && matchesDate;
     });
-  }, [searchTerm, selectedStatus, selectedPriority, selectedSource, selectedDateRange]);
+  }, [orders, searchTerm, selectedStatus, selectedPriority, selectedSource, selectedDateRange]);
 
   // Calculate statistics
   const stats = useMemo(() => {
-    const totalOrders = salesOrders.length;
-    const totalValue = salesOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-    const pendingOrders = salesOrders.filter(order => 
+    const totalOrders = orders.length;
+    const totalValue = orders.reduce((sum, order) => sum + order.total, 0);
+    const pendingOrders = orders.filter(order => 
       ['draft', 'pending', 'confirmed'].includes(order.status)
     ).length;
-    const inProductionOrders = salesOrders.filter(order => 
+    const inProductionOrders = orders.filter(order => 
       order.status === 'in_production'
     ).length;
-    const completedOrders = salesOrders.filter(order => 
+    const completedOrders = orders.filter(order => 
       order.status === 'completed'
     ).length;
-    const urgentOrders = salesOrders.filter(order => 
+    const urgentOrders = orders.filter(order => 
       order.priority === 'urgent'
     ).length;
 
@@ -138,9 +226,11 @@ export default function OrdersPage() {
       completedOrders,
       urgentOrders
     };
-  }, []);
+  }, [orders]);
 
   const getStatusColor = (status: SalesOrderStatus) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
+    
     switch (status) {
       case 'draft': return 'bg-gray-100 text-gray-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -157,6 +247,8 @@ export default function OrdersPage() {
   };
 
   const getPriorityColor = (priority: SalesOrderPriority) => {
+    if (!priority) return 'bg-gray-100 text-gray-800';
+    
     switch (priority) {
       case 'low': return 'bg-gray-100 text-gray-800';
       case 'normal': return 'bg-blue-100 text-blue-800';
@@ -167,6 +259,8 @@ export default function OrdersPage() {
   };
 
   const getSourceIcon = (source: SalesOrderSource) => {
+    if (!source) return <FileText className="h-4 w-4" />;
+    
     switch (source) {
       case 'pos': return <ShoppingCart className="h-4 w-4" />;
       case 'online': return <Globe className="h-4 w-4" />;
@@ -179,6 +273,9 @@ export default function OrdersPage() {
   };
 
   const formatCurrency = (amount: number) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '$0.00';
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
@@ -186,11 +283,16 @@ export default function OrdersPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    if (!dateString) return 'Unknown';
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
 
   return (
@@ -410,31 +512,40 @@ export default function OrdersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-8">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                        <span className="ml-2">Loading orders...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredOrders.map((order) => (
+                  <TableRow key={order._id}>
                     <TableCell className="font-medium">
                       {order.orderNumber}
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{order.customer?.name}</div>
-                        <div className="text-sm text-muted-foreground">{order.customer?.email}</div>
+                        <div className="font-medium">{order.customerName || 'Unknown Customer'}</div>
+                        <div className="text-sm text-muted-foreground">{order.customerEmail || '-'}</div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status.replace('_', ' ')}
+                      <Badge className={getStatusColor(order.status as SalesOrderStatus)}>
+                        {order.status?.replace('_', ' ') || 'Unknown'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getPriorityColor(order.priority)}>
-                        {order.priority}
+                      <Badge className={getPriorityColor(order.priority as SalesOrderPriority)}>
+                        {order.priority || 'normal'}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
-                        {getSourceIcon(order.source)}
-                        <span className="capitalize">{order.source.replace('_', ' ')}</span>
+                        {getSourceIcon(order.source as SalesOrderSource)}
+                        <span className="capitalize">{order.source?.replace('_', ' ') || 'Unknown'}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -443,13 +554,13 @@ export default function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {formatCurrency(order.totalAmount)}
+                      {formatCurrency(order.total)}
                     </TableCell>
                     <TableCell>
-                      {formatDate(order.orderDate)}
+                      {formatDate(order.orderDate.toString())}
                     </TableCell>
                     <TableCell>
-                      {order.requiredDate ? formatDate(order.requiredDate) : '-'}
+                      {order.requiredDate ? formatDate(order.requiredDate.toString()) : '-'}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -633,7 +744,7 @@ function OrderForm({ onClose }: { onClose: () => void }) {
 }
 
 // Order Details Component
-function OrderDetails({ order }: { order: SalesOrder }) {
+function OrderDetails({ order }: { order: DatabaseOrder }) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -673,24 +784,24 @@ function OrderDetails({ order }: { order: SalesOrder }) {
               </div>
               <div>
                 <Label className="text-sm font-medium">Status</Label>
-                <p className="text-sm text-muted-foreground capitalize">{order.status.replace('_', ' ')}</p>
+                <p className="text-sm text-muted-foreground capitalize">{order.status?.replace('_', ' ') || 'Unknown'}</p>
               </div>
               <div>
                 <Label className="text-sm font-medium">Priority</Label>
-                <p className="text-sm text-muted-foreground capitalize">{order.priority}</p>
+                <p className="text-sm text-muted-foreground capitalize">{order.priority || 'normal'}</p>
               </div>
               <div>
                 <Label className="text-sm font-medium">Source</Label>
-                <p className="text-sm text-muted-foreground capitalize">{order.source.replace('_', ' ')}</p>
+                <p className="text-sm text-muted-foreground capitalize">{order.source?.replace('_', ' ') || 'Unknown'}</p>
               </div>
               <div>
                 <Label className="text-sm font-medium">Order Date</Label>
-                <p className="text-sm text-muted-foreground">{formatDate(order.orderDate)}</p>
+                <p className="text-sm text-muted-foreground">{formatDate(order.orderDate.toString())}</p>
               </div>
               {order.requiredDate && (
                 <div>
                   <Label className="text-sm font-medium">Required Date</Label>
-                  <p className="text-sm text-muted-foreground">{formatDate(order.requiredDate)}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(order.requiredDate.toString())}</p>
                 </div>
               )}
             </CardContent>
@@ -701,26 +812,22 @@ function OrderDetails({ order }: { order: SalesOrder }) {
               <CardTitle>Customer Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {order.customer && (
-                <>
-                  <div>
-                    <Label className="text-sm font-medium">Name</Label>
-                    <p className="text-sm text-muted-foreground">{order.customer.name}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Email</Label>
-                    <p className="text-sm text-muted-foreground">{order.customer.email}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Phone</Label>
-                    <p className="text-sm text-muted-foreground">{order.customer.phone}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Type</Label>
-                    <p className="text-sm text-muted-foreground capitalize">{order.customer.type}</p>
-                  </div>
-                </>
-              )}
+              <div>
+                <Label className="text-sm font-medium">Name</Label>
+                <p className="text-sm text-muted-foreground">{order.customerName || 'Unknown Customer'}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Email</Label>
+                <p className="text-sm text-muted-foreground">{order.customerEmail || '-'}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Phone</Label>
+                <p className="text-sm text-muted-foreground">{order.customerPhone || '-'}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Cashier</Label>
+                <p className="text-sm text-muted-foreground">{order.cashierName}</p>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -737,19 +844,19 @@ function OrderDetails({ order }: { order: SalesOrder }) {
               </div>
               <div className="flex justify-between">
                 <span>Discount:</span>
-                <span>-{formatCurrency(order.discountAmount)}</span>
+                <span>-{formatCurrency(order.discount)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Tax:</span>
-                <span>{formatCurrency(order.taxAmount)}</span>
+                <span>{formatCurrency(order.tax)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping:</span>
-                <span>{formatCurrency(order.shippingCost)}</span>
+                <span>{formatCurrency(0)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
-                <span>{formatCurrency(order.totalAmount)}</span>
+                <span>{formatCurrency(order.total)}</span>
               </div>
             </div>
           </CardContent>
@@ -778,17 +885,17 @@ function OrderDetails({ order }: { order: SalesOrder }) {
                   <TableRow key={item.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{item.product.name}</div>
-                        <div className="text-sm text-muted-foreground">{item.product.sku}</div>
+                        <div className="font-medium">{item.productName}</div>
+                        <div className="text-sm text-muted-foreground">{item.productCode}</div>
                       </div>
                     </TableCell>
                     <TableCell>{item.quantity}</TableCell>
                     <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
-                    <TableCell>{item.discount}%</TableCell>
+                    <TableCell>0%</TableCell>
                     <TableCell>{formatCurrency(item.totalPrice)}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="capitalize">
-                        {item.status.replace('_', ' ')}
+                        pending
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -816,21 +923,19 @@ function OrderDetails({ order }: { order: SalesOrder }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {order.payments.map((payment) => (
-                  <TableRow key={payment.id}>
-                    <TableCell>{formatCurrency(payment.amount)}</TableCell>
-                    <TableCell className="capitalize">{payment.method.replace('_', ' ')}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {payment.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{payment.transactionId || '-'}</TableCell>
-                    <TableCell>
-                      {payment.processedAt ? formatDate(payment.processedAt) : '-'}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                <TableRow>
+                  <TableCell>{formatCurrency(order.payment.amount)}</TableCell>
+                  <TableCell className="capitalize">{order.payment.method?.replace('_', ' ') || 'Unknown'}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="capitalize">
+                      {order.payment.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{order.payment.transactionId || '-'}</TableCell>
+                  <TableCell>
+                    {order.payment.processedAt ? formatDate(order.payment.processedAt.toString()) : '-'}
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </CardContent>
@@ -844,24 +949,18 @@ function OrderDetails({ order }: { order: SalesOrder }) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {orderStatusHistory
-                .filter(history => history.orderId === order.id)
-                .map((history) => (
-                  <div key={history.id} className="flex items-start space-x-3 p-3 border rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium capitalize">{history.status.replace('_', ' ')}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDate(history.changedAt)}
-                        </p>
-                      </div>
-                      {history.reason && (
-                        <p className="text-sm text-muted-foreground mt-1">{history.reason}</p>
-                      )}
-                    </div>
+              <div className="flex items-start space-x-3 p-3 border rounded-lg">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium capitalize">{order.status?.replace('_', ' ') || 'Unknown'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(order.orderDate.toString())}
+                    </p>
                   </div>
-                ))}
+                  <p className="text-sm text-muted-foreground mt-1">Order created</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

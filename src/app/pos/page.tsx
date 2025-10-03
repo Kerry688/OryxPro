@@ -45,7 +45,8 @@ import {
   List,
   Zap,
   Target,
-  TrendingUp
+  TrendingUp,
+  RefreshCw
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -54,8 +55,9 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { products, customers, categories, branches, users, posOrders } from '@/lib/data';
-import type { Product, Customer, ProductCategory, CartItem, PaymentMethod, POSOrder } from '@/lib/data';
+import { products, categories, branches, users, posOrders } from '@/lib/data';
+import type { Product, ProductCategory, CartItem, PaymentMethod, POSOrder } from '@/lib/data';
+import type { Customer } from '@/lib/models/customer';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function POSPage() {
@@ -72,6 +74,7 @@ export default function POSPage() {
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentOrder, setCurrentOrder] = useState<POSOrder | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Filter products
   const filteredProducts = products.filter(product => {
@@ -173,41 +176,100 @@ export default function POSPage() {
   };
 
   // Payment functions
-  const processPayment = () => {
+  const processPayment = async () => {
     if (cart.length === 0) return;
     
-    const order: POSOrder = {
-      id: `pos_${Date.now()}`,
-      orderNumber: `POS-${new Date().getFullYear()}-${String(posOrders.length + 1).padStart(3, '0')}`,
-      customerId: selectedCustomer?.id,
-      customer: selectedCustomer,
-      items: cart,
-      subtotal,
-      taxAmount,
-      discountAmount: discountValue,
-      totalAmount: total,
-      paymentMethod,
-      paymentStatus: 'paid',
-      status: 'completed',
-      cashierId: user?.id || 'user_001',
-      cashier: user,
-      branchId: user?.branchId || 'br_001',
-      notes,
-      createdAt: new Date().toISOString(),
-      completedAt: new Date().toISOString(),
-    };
+    setIsProcessingPayment(true);
+    try {
+      // Prepare order data for database
+      const orderData = {
+        customerId: selectedCustomer?._id?.toString() || selectedCustomer?.customerCode,
+        customerName: selectedCustomer?.firstName && selectedCustomer?.lastName 
+          ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` 
+          : selectedCustomer?.companyName || 'Walk-in Customer',
+        customerEmail: selectedCustomer?.email,
+        customerPhone: selectedCustomer?.phone,
+        items: cart.map(item => ({
+          id: item.id,
+          productName: item.productName,
+          productCode: item.sku,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice,
+          category: item.category || 'General',
+          brand: item.brand || 'Unknown'
+        })),
+        subtotal,
+        taxAmount,
+        discountAmount: discountValue,
+        totalAmount: total,
+        paymentMethod,
+        status: 'completed',
+        cashierId: user?.id || 'user_001',
+        cashierName: user?.name || 'Unknown Cashier',
+        branchId: user?.branchId || 'br_001',
+        branchName: 'Main Branch',
+        notes,
+        transactionId: `TXN-${Date.now()}`,
+        source: 'pos' as const,
+        sourceDetails: {
+          channel: 'Point of Sale System'
+        }
+      };
 
-    setCurrentOrder(order);
-    setIsPaymentDialogOpen(false);
-    
-    // In a real app, you would save the order to the database here
-    console.log('Order processed:', order);
-    
-    // Clear cart after successful payment
-    setTimeout(() => {
-      clearCart();
-      setCurrentOrder(null);
-    }, 3000);
+      // Save order to database
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Create local order object for display
+        const order: POSOrder = {
+          id: `pos_${Date.now()}`,
+          orderNumber: result.data.orderNumber,
+          customerId: selectedCustomer?._id?.toString() || selectedCustomer?.customerCode,
+          customer: selectedCustomer,
+          items: cart,
+          subtotal,
+          taxAmount,
+          discountAmount: discountValue,
+          totalAmount: total,
+          paymentMethod,
+          paymentStatus: 'paid',
+          status: 'completed',
+          cashierId: user?.id || 'user_001',
+          cashier: user,
+          branchId: user?.branchId || 'br_001',
+          notes,
+          createdAt: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
+        };
+
+        setCurrentOrder(order);
+        setIsPaymentDialogOpen(false);
+        
+        console.log('Order saved to database:', result.data);
+        
+        // Clear cart after successful payment
+        setTimeout(() => {
+          clearCart();
+          setCurrentOrder(null);
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to save order');
+      }
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      alert(`Error processing payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   // Calculate today's stats
@@ -338,7 +400,7 @@ export default function POSPage() {
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full justify-start">
                   <User className="mr-2 h-4 w-4" />
-                  {selectedCustomer ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : 'Select Customer'}
+                  {selectedCustomer ? (selectedCustomer.companyName || `${selectedCustomer.firstName} ${selectedCustomer.lastName}`) : 'Select Customer'}
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -484,6 +546,7 @@ export default function POSPage() {
             onPaymentMethodChange={setPaymentMethod}
             onProcessPayment={processPayment}
             onCancel={() => setIsPaymentDialogOpen(false)}
+            isProcessing={isProcessingPayment}
           />
         </DialogContent>
       </Dialog>
@@ -532,59 +595,348 @@ function CustomerSelector({
   onClose: () => void;
 }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   
-  const filteredCustomers = customers.filter(customer =>
-    customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fetch customers from API
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/customers');
+      const result = await response.json();
+      
+      if (result.success) {
+        setCustomers(result.data);
+      } else {
+        setError(result.error || 'Failed to fetch customers');
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      setError('Failed to fetch customers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+  
+  const filteredCustomers = customers.filter(customer => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      customer.firstName.toLowerCase().includes(searchLower) ||
+      customer.lastName.toLowerCase().includes(searchLower) ||
+      customer.email.toLowerCase().includes(searchLower) ||
+      (customer.phone && customer.phone.includes(searchTerm)) ||
+      (customer.companyName && customer.companyName.toLowerCase().includes(searchLower)) ||
+      (customer.customerCode && customer.customerCode.toLowerCase().includes(searchLower))
+    );
+  });
 
   return (
-    <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search customers..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
+    <div className="space-y-4 w-full max-w-md">
+      <div className="flex gap-2 w-full">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, email, phone, or company..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-full"
+          />
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowQuickAdd(true)}
+          className="flex items-center gap-2 flex-shrink-0"
+          size="sm"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Quick Add</span>
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            fetchCustomers();
+          }}
+          disabled={loading}
+          className="flex items-center gap-2 flex-shrink-0"
+          size="sm"
+        >
+          {loading ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          <span className="hidden sm:inline">Refresh</span>
+        </Button>
       </div>
       
-      <div className="max-h-60 overflow-y-auto space-y-2">
+      <div className="max-h-60 overflow-y-auto space-y-2 w-full">
         <Button
           variant={!selectedCustomer ? "default" : "outline"}
-          className="w-full justify-start"
+          className="w-full justify-start text-left"
           onClick={() => {
             onSelect(null);
             onClose();
           }}
         >
-          <User className="mr-2 h-4 w-4" />
+          <User className="mr-2 h-4 w-4 flex-shrink-0" />
           Walk-in Customer
         </Button>
         
-        {filteredCustomers.map(customer => (
-          <Button
-            key={customer.id}
-            variant={selectedCustomer?.id === customer.id ? "default" : "outline"}
-            className="w-full justify-start"
-            onClick={() => {
-              onSelect(customer);
-              onClose();
-            }}
-          >
-            <Avatar className="mr-2 h-6 w-6">
-              <AvatarFallback className="text-xs">
-                {customer.firstName[0]}{customer.lastName[0]}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-left">
-              <div className="font-medium">{customer.firstName} {customer.lastName}</div>
-              <div className="text-xs text-muted-foreground">{customer.email}</div>
+        {loading ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+              Loading customers...
             </div>
-          </Button>
-        ))}
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="text-center text-red-600">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
+              <p className="text-sm">{error}</p>
+            </div>
+          </div>
+        ) : filteredCustomers.length === 0 ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="text-center text-muted-foreground">
+              <User className="h-8 w-8 mx-auto mb-2" />
+              <p className="text-sm">No customers found</p>
+            </div>
+          </div>
+        ) : (
+                filteredCustomers.map(customer => (
+                  <Button
+                    key={customer._id?.toString() || customer.customerCode}
+                    variant={selectedCustomer?._id?.toString() === customer._id?.toString() ? "default" : "outline"}
+                    className="w-full justify-start text-left h-auto p-3"
+                    onClick={() => {
+                      onSelect(customer);
+                      onClose();
+                    }}
+                  >
+                    <Avatar className="mr-3 h-8 w-8 flex-shrink-0">
+                      <AvatarFallback className="text-xs">
+                        {customer.firstName[0]}{customer.lastName[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="font-medium truncate">
+                        {customer.companyName || `${customer.firstName} ${customer.lastName}`}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {customer.email}
+                        {customer.phone && ` • ${customer.phone}`}
+                      </div>
+                    </div>
+                  </Button>
+                ))
+        )}
+      </div>
+
+      {/* Quick Add Customer Dialog */}
+      {showQuickAdd && (
+        <QuickAddCustomerForm
+          onCustomerAdded={(customer) => {
+            setCustomers(prev => [customer, ...prev]);
+            onSelect(customer);
+            setShowQuickAdd(false);
+            onClose();
+          }}
+          onCancel={() => setShowQuickAdd(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Quick Add Customer Form Component
+function QuickAddCustomerForm({
+  onCustomerAdded,
+  onCancel
+}: {
+  onCustomerAdded: (customer: Customer) => void;
+  onCancel: () => void;
+}) {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    companyName: '',
+    customerType: 'individual' as 'individual' | 'business'
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Generate customer code
+      const customerCode = `CUST-${Date.now()}`;
+      
+      // Prepare customer data
+      const customerData = {
+        customerCode,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        companyName: formData.companyName || undefined,
+        address: {
+          street: 'TBD',
+          city: 'TBD',
+          state: 'TBD',
+          zipCode: 'TBD',
+          country: 'TBD'
+        },
+        customerType: formData.customerType,
+        creditLimit: 0,
+        paymentTerms: 30,
+        notes: 'Quick added from POS',
+        tags: ['pos-quick-add']
+      };
+
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customerData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        onCustomerAdded(result.data);
+      } else {
+        setError(result.error || 'Failed to create customer');
+      }
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      setError('Failed to create customer');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <h3 className="text-lg font-semibold mb-4">Quick Add Customer</h3>
+        
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="firstName" className="text-sm">First Name *</Label>
+              <Input
+                id="firstName"
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                required
+                className="h-9"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName" className="text-sm">Last Name *</Label>
+              <Input
+                id="lastName"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                required
+                className="h-9"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="email" className="text-sm">Email *</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              className="h-9"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="phone" className="text-sm">Phone</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="h-9"
+              />
+            </div>
+            <div>
+              <Label htmlFor="companyName" className="text-sm">Company</Label>
+              <Input
+                id="companyName"
+                value={formData.companyName}
+                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                className="h-9"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-sm">Customer Type</Label>
+            <Select 
+              value={formData.customerType} 
+              onValueChange={(value: 'individual' | 'business') => setFormData({ ...formData, customerType: value })}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="individual">Individual</SelectItem>
+                <SelectItem value="business">Business</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {error && (
+            <div className="text-red-600 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="flex-1 h-9"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="flex-1 h-9"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Creating...
+                </>
+              ) : (
+                'Create Customer'
+              )}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -596,13 +948,15 @@ function PaymentDialog({
   paymentMethod,
   onPaymentMethodChange,
   onProcessPayment,
-  onCancel
+  onCancel,
+  isProcessing
 }: {
   total: number;
   paymentMethod: PaymentMethod;
   onPaymentMethodChange: (method: PaymentMethod) => void;
   onProcessPayment: () => void;
   onCancel: () => void;
+  isProcessing: boolean;
 }) {
   const [amountPaid, setAmountPaid] = useState(total);
   const [change, setChange] = useState(0);
@@ -676,9 +1030,16 @@ function PaymentDialog({
         <Button 
           className="flex-1" 
           onClick={onProcessPayment}
-          disabled={paymentMethod === 'cash' && amountPaid < total}
+          disabled={isProcessing || (paymentMethod === 'cash' && amountPaid < total)}
         >
-          Process Payment
+          {isProcessing ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Processing...
+            </>
+          ) : (
+            'Process Payment'
+          )}
         </Button>
       </div>
     </div>

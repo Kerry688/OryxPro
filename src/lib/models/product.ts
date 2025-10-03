@@ -3,6 +3,9 @@ import { Document, ObjectId } from 'mongodb';
 // Base Product Type
 export type ProductType = 'sales_product' | 'print_item' | 'service' | 'raw_material' | 'kit_bundle' | 'asset';
 
+// Tracking Types
+export type TrackingType = 'none' | 'serial' | 'batch';
+
 // Common Product Interface
 export interface BaseProduct extends Document {
   _id?: ObjectId;
@@ -15,6 +18,13 @@ export interface BaseProduct extends Document {
   images: string[];
   tags: string[];
   isActive: boolean;
+  
+  // New tracking and service fields
+  trackingType: TrackingType; // How the product is tracked (none, serial, batch)
+  warrantyPeriod?: number; // Warranty period in months (optional)
+  unitOfMeasure: string; // Unit of measure (e.g., 'pcs', 'kg', 'm', 'hrs', 'sqm')
+  isService: boolean; // Whether this is a service item (like repair labor)
+  
   createdAt: Date;
   updatedAt: Date;
   createdBy: ObjectId;

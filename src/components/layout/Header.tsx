@@ -817,18 +817,18 @@ export function Header() {
             variant="ghost" 
             size="sm" 
             onClick={toggleDarkMode}
-            className="h-8 w-8 p-0 hidden md:flex items-center justify-center"
+            className="h-10 w-10 p-0 hidden md:flex items-center justify-center"
           >
-            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
           {/* Chat/Messages */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative h-8 w-8 p-0 flex items-center justify-center [&[data-state=open]>svg:last-child]:hidden">
-                <MessageCircle className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0 flex items-center justify-center [&[data-state=open]>svg:last-child]:hidden">
+                <MessageCircle className="h-5 w-5" />
                 {unreadMessages > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-red-500 text-white">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white rounded-full">
                     {unreadMessages}
                   </Badge>
                 )}
@@ -897,10 +897,10 @@ export function Header() {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative h-8 w-8 p-0 flex items-center justify-center [&[data-state=open]>svg:last-child]:hidden">
-                <Bell className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0 flex items-center justify-center [&[data-state=open]>svg:last-child]:hidden">
+                <Bell className="h-5 w-5" />
                 {unreadNotifications > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-red-500 text-white">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white rounded-full">
                     {unreadNotifications}
                   </Badge>
                 )}
@@ -969,8 +969,8 @@ export function Header() {
           {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 p-0 rounded-full flex items-center justify-center">
-                <Avatar className="h-8 w-8">
+              <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full flex items-center justify-center">
+                <Avatar className="h-10 w-10">
                     <AvatarImage src={user?.avatar} />
                   <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
                       {user?.firstName?.[0]}{user?.lastName?.[0]}

@@ -64,7 +64,13 @@ import {
   Clock,
   Grid3X3,
   Zap,
-  Database
+  Database,
+  RotateCcw,
+  Kanban,
+  ListTodo,
+  Folder,
+  RefreshCw,
+  Wrench
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -127,12 +133,22 @@ export function Sidebar() {
       icon: ShoppingCart,
       children: [
         { href: '/orders', label: t('allOrders') || 'All Orders', icon: FileText },
+        { href: '/orders/daily', label: t('dailyOrders') || 'Daily Orders', icon: Calendar },
         { href: '/orders/create', label: t('createOrder') || 'Create Order', icon: Plus },
         { href: '/orders/pipeline', label: t('orderPipeline') || 'Order Pipeline', icon: Workflow },
         { href: '/orders/status', label: t('statusTracking') || 'Status Tracking', icon: Activity },
         { href: '/orders/templates', label: t('orderTemplates') || 'Order Templates', icon: FileText },
         { href: '/pos', label: t('pointOfSale') || 'Point Of Sale', icon: ShoppingCart },
         { href: '/track-order', label: t('trackOrder') || 'Track Order', icon: Search },
+      ]
+    },
+    {
+      href: '/return-orders',
+      label: t('returnOrders') || 'Return Orders',
+      icon: RotateCcw,
+      children: [
+        { href: '/return-orders', label: t('allReturns') || 'All Returns', icon: RotateCcw },
+        { href: '/return-orders/create', label: t('createReturn') || 'Create Return', icon: Plus },
       ]
     },
     {
@@ -147,6 +163,20 @@ export function Sidebar() {
       ]
     },
 
+    // === CRM & SALES ===
+    {
+      href: '/crm',
+      label: t('crm') || 'CRM',
+      icon: Users,
+      children: [
+        { href: '/crm/leads', label: t('leads') || 'Leads', icon: UserPlus },
+        { href: '/crm/deals', label: t('deals') || 'Deals', icon: Target },
+        { href: '/crm/quotations', label: t('quotations') || 'Quotations', icon: FileText },
+        { href: '/crm/activities', label: t('salesActivities') || 'Sales Activities', icon: Activity },
+        { href: '/crm/pipeline', label: t('salesPipeline') || 'Sales Pipeline', icon: Workflow },
+      ]
+    },
+
     // === PRODUCTS & CATALOG ===
     {
       href: '/products',
@@ -157,8 +187,29 @@ export function Sidebar() {
         { href: '/products/manage', label: t('manageProducts') || 'Manage Products', icon: Package },
         { href: '/products/types', label: t('productTypes') || 'Product Types', icon: Package },
         { href: '/products/kits-bundles', label: t('kitsBundles') || 'Kits And Bundles', icon: Package },
+        { href: '/products/service-history', label: t('serviceHistory') || 'Service History', icon: Clock },
         { href: '/categories', label: t('categories') || 'Categories', icon: Tag },
         { href: '/brands', label: t('brands') || 'Brands', icon: Building2 },
+      ]
+    },
+    {
+      href: '/warranties',
+      label: t('warranties') || 'Warranties',
+      icon: Shield,
+      children: [
+        { href: '/warranties', label: t('warrantyCards') || 'Warranty Cards', icon: Shield },
+        { href: '/warranties/claims', label: t('warrantyClaims') || 'Warranty Claims', icon: AlertTriangle },
+      ]
+    },
+    {
+      href: '/service-requests',
+      label: t('serviceRequests') || 'Service Requests',
+      icon: Wrench,
+      children: [
+        { href: '/service-requests', label: t('allServiceRequests') || 'All Service Requests', icon: Wrench },
+        { href: '/service-requests/work-orders', label: t('workOrders') || 'Work Orders', icon: ClipboardList },
+        { href: '/service-requests/schedule', label: t('technicianSchedule') || 'Technician Schedule', icon: CalendarDays },
+        { href: '/service-requests/analytics', label: t('serviceAnalytics') || 'Service Analytics', icon: BarChart3 },
       ]
     },
     {
@@ -286,6 +337,22 @@ export function Sidebar() {
       ]
     },
 
+    // === TASK MANAGEMENT ===
+    {
+      href: '/tasks',
+      label: t('taskManagement') || 'Task Management',
+      icon: CheckSquare,
+      children: [
+        { href: '/tasks', label: t('allTasks') || 'All Tasks', icon: ListTodo },
+        { href: '/tasks/kanban', label: t('kanbanBoard') || 'Kanban Board', icon: Kanban },
+        { href: '/tasks/calendar', label: t('taskCalendar') || 'Task Calendar', icon: Calendar },
+        { href: '/tasks/my-tasks', label: t('myTasks') || 'My Tasks', icon: User },
+        { href: '/tasks/team', label: t('teamTasks') || 'Team Tasks', icon: Users },
+        { href: '/tasks/projects', label: t('projects') || 'Projects', icon: Folder },
+        { href: '/tasks/reports', label: t('taskReports') || 'Task Reports', icon: BarChart3 },
+      ]
+    },
+
     // === SYSTEM & ADMINISTRATION ===
     {
       href: '/users',
@@ -312,6 +379,7 @@ export function Sidebar() {
       icon: Settings,
       children: [
         { href: '/admin/seed-brands', label: t('seedBrands') || 'Seed Demo Data', icon: Package },
+        { href: '/demo-data', label: t('demoDataManagement') || 'Demo Data Management', icon: Database },
       ]
     },
     {
@@ -339,6 +407,27 @@ export function Sidebar() {
       href: '/help',
       label: t('helpAndSupport') || 'Help And Support',
       icon: HelpCircle,
+    },
+
+    // === COMMUNICATION ===
+    {
+      href: '/chat',
+      label: t('chat') || 'Chat',
+      icon: MessageSquare,
+    },
+
+    // === TAX COMPLIANCE ===
+    {
+      href: '/eta',
+      label: t('eta') || 'ETA',
+      icon: Building2,
+      children: [
+        { href: '/eta', label: t('etaDashboard') || 'ETA Dashboard', icon: Building2 },
+        { href: '/eta/products', label: t('etaProducts') || 'ETA Products', icon: Package },
+        { href: '/eta/invoices', label: t('etaInvoices') || 'ETA Invoices', icon: FileText },
+        { href: '/eta/sync', label: t('etaSync') || 'ETA Sync', icon: RefreshCw },
+        { href: '/eta/settings', label: t('etaSettings') || 'ETA Settings', icon: Settings },
+      ]
     },
   ];
 
