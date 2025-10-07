@@ -321,7 +321,7 @@ export default function CreateReturnOrderPage() {
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Create Return Order</h1>
+            <h1 className="text-3xl">Create Return Order</h1>
             <p className="text-muted-foreground">
               Process a return for an existing order
             </p>

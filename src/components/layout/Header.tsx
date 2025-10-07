@@ -95,6 +95,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { useTranslation } from '@/hooks/use-translation';
 import { useSidebar } from '@/contexts/sidebar-context';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -137,12 +138,6 @@ export function Header() {
       label: 'Customers',
       icon: Users,
       category: 'Sales'
-    },
-    {
-      href: '/products/manage',
-      label: 'Manage Products',
-      icon: Package,
-      category: 'Products'
     },
     {
       href: '/inventory',
@@ -797,6 +792,9 @@ export function Header() {
 
         {/* Right Section - Actions & User Menu */}
         <div className="flex items-center space-x-1 flex-shrink-0">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Mobile Menu Button - Hidden on larger screens */}
           <Button
             variant="ghost"
@@ -828,9 +826,9 @@ export function Header() {
               <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0 flex items-center justify-center [&[data-state=open]>svg:last-child]:hidden">
                 <MessageCircle className="h-5 w-5" />
                 {unreadMessages > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white rounded-full">
+                  <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
                     {unreadMessages}
-                  </Badge>
+                  </div>
                 )}
               </Button>
             </DropdownMenuTrigger>
@@ -900,9 +898,9 @@ export function Header() {
               <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0 flex items-center justify-center [&[data-state=open]>svg:last-child]:hidden">
                 <Bell className="h-5 w-5" />
                 {unreadNotifications > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white rounded-full">
+                  <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
                     {unreadNotifications}
-                  </Badge>
+                  </div>
                 )}
               </Button>
             </DropdownMenuTrigger>
@@ -969,10 +967,10 @@ export function Header() {
           {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full flex items-center justify-center">
-                <Avatar className="h-10 w-10">
+              <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-lg flex items-center justify-center">
+                <Avatar className="h-10 w-10 rounded-lg">
                     <AvatarImage src={user?.avatar} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold rounded-lg">
                       {user?.firstName?.[0]}{user?.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
@@ -982,9 +980,9 @@ export function Header() {
             <DropdownMenuContent className="w-56" align="end" sideOffset={8}>
               <div className="p-2 border-b">
                 <div className="flex items-center space-x-2">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarImage src={user?.avatar} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold rounded-lg">
                         {user?.firstName?.[0]}{user?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -1000,14 +998,18 @@ export function Header() {
                 </div>
               
               <div className="max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 scroll-smooth">
-                <DropdownMenuItem className="flex items-center space-x-2">
-                  <User className="h-4 w-4" />
-                  <span>{t('profile') || 'Profile'}</span>
+                <DropdownMenuItem asChild className="flex items-center space-x-2">
+                  <a href="/profile">
+                    <User className="h-4 w-4" />
+                    <span>{t('profile') || 'Profile'}</span>
+                  </a>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="flex items-center space-x-2">
-                  <Settings className="h-4 w-4" />
-                  <span>{t('settings') || 'Settings'}</span>
+                <DropdownMenuItem asChild className="flex items-center space-x-2">
+                  <a href="/settings">
+                    <Settings className="h-4 w-4" />
+                    <span>{t('settings') || 'Settings'}</span>
+                  </a>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem className="flex items-center space-x-2">
@@ -1029,7 +1031,7 @@ export function Header() {
                 
                 <DropdownMenuItem 
                   className="flex items-center space-x-2 text-destructive focus:text-destructive"
-                  onClick={signOut}
+                  onClick={() => signOut()}
                 >
                   <LogOut className="h-4 w-4" />
                   <span>{t('signOut') || 'Sign Out'}</span>

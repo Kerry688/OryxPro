@@ -143,10 +143,11 @@ export default function StoresManagementPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Store Management</h1>
+          <h1 className="text-3xl">Store Management</h1>
           <p className="text-muted-foreground">Manage your retail locations and online stores</p>
         </div>
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

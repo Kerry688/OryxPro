@@ -182,7 +182,7 @@ export default function OrderStatusPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Order Status Tracking</h1>
+          <h1 className="text-3xl">Order Status Tracking</h1>
           <p className="text-muted-foreground">
             Monitor order progress and manage status updates
           </p>

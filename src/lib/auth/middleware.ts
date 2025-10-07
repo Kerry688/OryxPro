@@ -10,7 +10,7 @@ export interface AuthenticatedRequest extends NextRequest {
  * @param request - NextRequest object
  * @returns NextResponse with user data or error
  */
-export function authenticateToken(request: NextRequest): { user: JWTPayload } | { error: string; status: number } {
+export async function authenticateToken(request: NextRequest): Promise<{ user: JWTPayload } | { error: string; status: number }> {
   const authHeader = request.headers.get('authorization');
   const token = extractTokenFromHeader(authHeader);
 
@@ -21,7 +21,7 @@ export function authenticateToken(request: NextRequest): { user: JWTPayload } | 
     };
   }
 
-  const payload = verifyToken(token);
+  const payload = await verifyToken(token);
   if (!payload) {
     return {
       error: 'Invalid or expired token',
@@ -46,10 +46,13 @@ export function createAuthenticatedResponse(user: JWTPayload, data: any, message
       ...data,
       user: {
         userId: user.userId,
-        username: user.username,
         email: user.email,
-        roleId: user.roleId,
-        branchId: user.branchId
+        userType: user.userType,
+        role: user.role,
+        loginPortal: user.loginPortal,
+        branchId: user.branchId,
+        customerId: user.customerId,
+        employeeId: user.employeeId
       }
     },
     message

@@ -183,7 +183,7 @@ export default function OrderPipelinePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Order Pipeline</h1>
+          <h1 className="text-3xl">Order Pipeline</h1>
           <p className="text-muted-foreground">
             Visualize and manage order workflows through pipeline stages
           </p>

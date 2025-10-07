@@ -876,7 +876,7 @@ export function EnhancedSidebar() {
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
           )}
-          <Button variant="ghost" size="sm" onClick={signOut}>
+          <Button variant="ghost" size="sm" onClick={() => signOut()}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>

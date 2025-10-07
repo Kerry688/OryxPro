@@ -254,7 +254,7 @@ export default function HomePage() {
         {/* Welcome Section */}
         <div className="flex items-center justify-between w-full max-w-full overflow-x-hidden">
           <div className="flex-1 min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-3xl tracking-tight">
               {greeting}, {user?.firstName}!
             </h1>
             <p className="text-muted-foreground">

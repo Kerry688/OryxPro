@@ -4,25 +4,36 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
+import { UserType, LoginPortal, UserRole } from '@/lib/models/user';
+
 export interface User {
-  userId: string;
+  _id?: string;
+  userId?: string;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
   phone?: string;
-  status: 'active' | 'inactive' | 'suspended' | 'pending';
-  roleId: string;
+  userType: UserType;
+  role: UserRole;
+  loginPortal: LoginPortal;
+  status?: 'active' | 'inactive' | 'suspended' | 'pending';
+  roleId?: string;
   branchId?: string;
-  department: string;
-  position: string;
-  isEmailVerified: boolean;
-  isPhoneVerified: boolean;
-  twoFactorEnabled: boolean;
+  department?: string;
+  position?: string;
+  isActive: boolean;
+  isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
+  twoFactorEnabled?: boolean;
   employeeId?: string;
+  customerId?: string;
+  companyName?: string;
   lastLoginAt?: string;
-  createdAt: string;
-  updatedAt: string;
+  lastLogin?: Date;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  permissions?: string[];
 }
 
 export interface Role {
@@ -62,11 +73,12 @@ export interface AuthState {
 }
 
 export interface AuthContextType extends AuthState {
-  signIn: (username: string, password: string) => Promise<boolean>;
-  signOut: () => void;
+  login: (email: string, password: string, portal: LoginPortal, rememberMe?: boolean) => Promise<boolean>;
+  signOut: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   refreshUser: () => Promise<void>;
+  getRedirectUrl: () => string;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -130,35 +142,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth();
   }, []);
 
-  const signIn = async (username: string, password: string): Promise<boolean> => {
+
+  const login = async (email: string, password: string, portal: LoginPortal, rememberMe: boolean = false): Promise<boolean> => {
     try {
-      const response = await fetch('/api/auth/signin', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password, portal, rememberMe }),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        const { user, token, role, branch, employee } = result.data;
+        const { user, token, redirectUrl } = result;
 
         // Store auth data in localStorage (only in browser)
         if (typeof window !== 'undefined') {
-          localStorage.setItem('auth_token', token);
-          localStorage.setItem('auth_user', JSON.stringify(user));
-          if (role) localStorage.setItem('auth_role', JSON.stringify(role));
-          if (branch) localStorage.setItem('auth_branch', JSON.stringify(branch));
-          if (employee) localStorage.setItem('auth_employee', JSON.stringify(employee));
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+          
+          // Set cookie for middleware
+          document.cookie = `token=${token}; path=/; ${rememberMe ? 'max-age=604800' : ''}`;
         }
 
         setAuthState({
           user,
-          role,
-          branch,
-          employee,
+          role: null,
+          branch: null,
+          employee: null,
           token,
           isAuthenticated: true,
           isLoading: false,
@@ -168,26 +181,55 @@ export function AuthProvider({ children }: AuthProviderProps) {
           description: `Hello ${user.firstName} ${user.lastName}`,
         });
 
+        // Redirect to the appropriate portal
+        router.push(redirectUrl);
         return true;
+      } else if (result.mustResetPassword) {
+        // Handle password reset requirement
+        toast.error('Password reset required', {
+          description: result.message,
+        });
+        
+        // Redirect to password reset page with token
+        router.push(`/reset-password?token=${result.resetToken}`);
+        return false;
       } else {
-        toast.error(result.error || 'Sign in failed');
+        toast.error(result.message || 'Login failed');
         return false;
       }
     } catch (error) {
-      console.error('Sign in error:', error);
-      toast.error('Sign in failed. Please try again.');
+      console.error('Login error:', error);
+      toast.error('Network error. Please try again.');
       return false;
     }
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    try {
+      // Call signout API to clear server-side session
+      await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Signout API error:', error);
+      // Continue with client-side cleanup even if API fails
+    }
+
     // Clear localStorage (only in browser)
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_role');
       localStorage.removeItem('auth_branch');
       localStorage.removeItem('auth_employee');
+      
+      // Clear cookies
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     }
 
     // Reset auth state
@@ -202,7 +244,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     toast.success('Signed out successfully');
-    router.push('/signin');
+    router.push('/login');
   };
 
   const updateProfile = async (data: Partial<User>): Promise<boolean> => {
@@ -312,13 +354,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const getRedirectUrl = (): string => {
+    if (!authState.user) return '/login';
+    
+    switch (authState.user.userType) {
+      case UserType.EMPLOYEE:
+        return '/employee';
+      case UserType.CUSTOMER:
+        return '/customer-portal';
+      case UserType.ERP_USER:
+        return '/';
+      default:
+        return '/login';
+    }
+  };
+
   const value: AuthContextType = {
     ...authState,
-    signIn,
+    login,
     signOut,
     updateProfile,
     changePassword,
     refreshUser,
+    getRedirectUrl,
   };
 
   return (

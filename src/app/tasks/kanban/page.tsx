@@ -321,7 +321,7 @@ export default function KanbanPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Kanban Board</h1>
+          <h1 className="text-3xl tracking-tight">Kanban Board</h1>
           <p className="text-muted-foreground">
             Visual task management with drag-and-drop functionality
           </p>

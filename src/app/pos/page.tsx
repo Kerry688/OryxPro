@@ -288,7 +288,7 @@ export default function POSPage() {
       <div className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Point of Sale</h1>
+            <h1 className="text-2xl">Point of Sale</h1>
             <p className="text-muted-foreground">
               Welcome back, {user?.firstName}! • {branches.find(b => b.id === user?.branchId)?.name || 'Main Branch'}
             </p>

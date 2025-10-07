@@ -53,7 +53,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold">{product.name}</h1>
+          <h1 className="text-3xl">{product.name}</h1>
           <RichTextDisplay 
             content={product.description} 
             className="text-gray-600 mt-2"

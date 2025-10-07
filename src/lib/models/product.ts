@@ -1,7 +1,7 @@
 import { Document, ObjectId } from 'mongodb';
 
 // Base Product Type
-export type ProductType = 'sales_product' | 'print_item' | 'service' | 'raw_material' | 'kit_bundle' | 'asset';
+export type ProductType = 'virtual_digital' | 'manufactured_product' | 'sales_product' | 'consumables' | 'print_item' | 'service' | 'raw_material' | 'kit_bundle' | 'asset';
 
 // Tracking Types
 export type TrackingType = 'none' | 'serial' | 'batch';
@@ -29,6 +29,83 @@ export interface BaseProduct extends Document {
   updatedAt: Date;
   createdBy: ObjectId;
   updatedBy: ObjectId;
+}
+
+// Virtual/Digital Product - Digital products and services
+export interface VirtualDigitalProduct extends BaseProduct {
+  type: 'virtual_digital';
+  price: number;
+  cost: number;
+  stock: number;
+  minStock: number;
+  maxStock: number;
+  reorderPoint: number;
+  unit: string;
+  isDownloadable: boolean;
+  downloadLimit?: number; // max downloads per purchase
+  downloadExpiry?: number; // days after purchase
+  fileSize?: number; // in MB
+  supportedFormats: string[];
+  systemRequirements?: {
+    os: string[];
+    software: string[];
+    hardware?: string[];
+  };
+  licenseType: 'single_use' | 'multi_use' | 'commercial' | 'personal' | 'subscription';
+  licenseDuration?: number; // in days, for subscription types
+  digitalDelivery: {
+    method: 'email' | 'download_link' | 'cloud_access' | 'api_access';
+    automated: boolean;
+    emailTemplate?: string;
+  };
+}
+
+// Manufactured Product - Finished goods from production
+export interface ManufacturedProduct extends BaseProduct {
+  type: 'manufactured_product';
+  price: number;
+  cost: number;
+  stock: number;
+  minStock: number;
+  maxStock: number;
+  reorderPoint: number;
+  unit: string;
+  weight?: number;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  brand?: string;
+  model?: string;
+  warranty?: {
+    period: number; // months
+    terms: string;
+  };
+  shipping?: {
+    weight: number;
+    dimensions: {
+      length: number;
+      width: number;
+      height: number;
+    };
+    requiresSpecialHandling: boolean;
+  };
+  manufacturing: {
+    productionTime: number; // in hours
+    batchSize: number;
+    productionCost: number;
+    materialsUsed: Array<{
+      materialId: ObjectId;
+      quantity: number;
+      cost: number;
+    }>;
+    qualityControl: {
+      inspectionRequired: boolean;
+      inspectionSteps: string[];
+      qualityStandards: string[];
+    };
+  };
 }
 
 // Sales Product - Regular retail products
@@ -61,6 +138,50 @@ export interface SalesProduct extends BaseProduct {
       height: number;
     };
     requiresSpecialHandling: boolean;
+  };
+}
+
+// Consumables - Items that get used up or consumed
+export interface Consumables extends BaseProduct {
+  type: 'consumables';
+  price: number;
+  cost: number;
+  stock: number;
+  minStock: number;
+  maxStock: number;
+  reorderPoint: number;
+  unit: string;
+  weight?: number;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  brand?: string;
+  model?: string;
+  consumptionRate: number; // units consumed per period
+  shelfLife?: number; // in days
+  storageRequirements?: {
+    temperature?: {
+      min: number;
+      max: number;
+    };
+    humidity?: {
+      min: number;
+      max: number;
+    };
+    lightSensitive: boolean;
+    requiresRefrigeration: boolean;
+  };
+  packaging: {
+    type: 'bottle' | 'box' | 'tube' | 'sachet' | 'bulk' | 'other';
+    size: string;
+    unitsPerPackage: number;
+  };
+  usage: {
+    primaryUse: string;
+    compatibleEquipment?: string[];
+    applicationMethod?: string;
   };
 }
 
@@ -249,7 +370,7 @@ export interface Asset extends BaseProduct {
 }
 
 // Union type for all products
-export type Product = SalesProduct | PrintItem | Service | RawMaterial | KitBundle | Asset;
+export type Product = VirtualDigitalProduct | ManufacturedProduct | SalesProduct | Consumables | PrintItem | Service | RawMaterial | KitBundle | Asset;
 
 // Supporting Types
 export interface PrintSpecification {
@@ -305,7 +426,10 @@ export interface CreateProductData {
   createdBy: ObjectId;
   
   // Type-specific data
+  virtualDigitalData?: Partial<VirtualDigitalProduct>;
+  manufacturedData?: Partial<ManufacturedProduct>;
   salesData?: Partial<SalesProduct>;
+  consumablesData?: Partial<Consumables>;
   printData?: Partial<PrintItem>;
   serviceData?: Partial<Service>;
   materialData?: Partial<RawMaterial>;
@@ -326,7 +450,10 @@ export interface UpdateProductData {
   updatedBy: ObjectId;
   
   // Type-specific data
+  virtualDigitalData?: Partial<VirtualDigitalProduct>;
+  manufacturedData?: Partial<ManufacturedProduct>;
   salesData?: Partial<SalesProduct>;
+  consumablesData?: Partial<Consumables>;
   printData?: Partial<PrintItem>;
   serviceData?: Partial<Service>;
   materialData?: Partial<RawMaterial>;

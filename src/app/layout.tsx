@@ -3,6 +3,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import ClientOnlyLayout from '@/components/layout/ClientOnlyLayout';
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
-          'min-h-screen w-full font-body antialiased overflow-x-hidden bg-[#FCFCFC]'
+          'min-h-screen w-full font-body antialiased overflow-x-hidden bg-background text-foreground'
         )}
         style={{ 
           width: '100%', 
@@ -36,12 +37,14 @@ export default function RootLayout({
         }}
         suppressHydrationWarning
       >
-        <AuthProvider>
-          <ClientOnlyLayout>
-            {children}
-          </ClientOnlyLayout>
-          <Toaster />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ClientOnlyLayout>
+              {children}
+            </ClientOnlyLayout>
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

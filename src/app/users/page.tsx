@@ -117,10 +117,11 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
+          <h1 className="text-3xl">User Management</h1>
           <p className="text-muted-foreground">Manage users, roles, and permissions</p>
         </div>
         <div className="flex gap-2">

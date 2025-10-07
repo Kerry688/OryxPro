@@ -362,7 +362,7 @@ export function ServiceRequestForm({ request, onSave, onCancel }: ServiceRequest
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">No warranty</SelectItem>
+                          <SelectItem value="none">No warranty</SelectItem>
                           {warranties.map((warranty) => (
                             <SelectItem key={warranty._id} value={warranty._id}>
                               {warranty.warrantyNumber} - {warranty.status}

@@ -314,7 +314,7 @@ export default function TeamTasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Team Tasks</h1>
+          <h1 className="text-3xl tracking-tight">Team Tasks</h1>
           <p className="text-muted-foreground">
             Monitor and manage team task distribution and progress
           </p>

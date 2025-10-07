@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,7 +30,9 @@ import {
   User,
   Calendar,
   CreditCard,
-  FileText
+  FileText,
+  UserPlus,
+  Monitor
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -52,6 +54,11 @@ export default function CustomerManagementPage() {
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // Customer Portal Invitation state
+  const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
+  const [invitationMessage, setInvitationMessage] = useState('');
+  const [sendingInvitation, setSendingInvitation] = useState(false);
 
   // Fetch customers from API
   const fetchCustomers = async () => {
@@ -148,11 +155,65 @@ export default function CustomerManagementPage() {
   const totalCreditLimit = customers.reduce((sum, c) => sum + c.creditLimit, 0);
   const averageOrderValue = customers.reduce((sum, c) => sum + c.averageOrderValue, 0) / customers.length;
 
+  // Customer Portal Invitation functions
+  const handleSendCustomerInvitation = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setInvitationMessage(`Hello ${customer.firstName || customer.companyName},\n\nWe're excited to invite you to join our customer portal where you can:\n\n• View your order history and status\n• Download invoices and receipts\n• Track shipments and deliveries\n• Update your account information\n• Access exclusive offers and promotions\n\nPlease use your customer credentials to log in.\n\nBest regards,\nCustomer Service Team`);
+    setInvitationDialogOpen(true);
+  };
+
+  const handleSubmitCustomerInvitation = async () => {
+    if (!selectedCustomer) {
+      alert('Customer information is missing');
+      return;
+    }
+
+    // Always use customer portal with customer role
+    const portal = 'customer_portal';
+    const role = 'customer';
+
+    setSendingInvitation(true);
+    try {
+      const response = await fetch('/api/users/send-invitation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: selectedCustomer.email,
+          firstName: selectedCustomer.firstName || selectedCustomer.companyName || 'Customer',
+          lastName: selectedCustomer.lastName || '',
+          portal: portal,
+          role: role,
+          customerId: selectedCustomer.customerCode,
+          message: invitationMessage
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('Customer portal invitation sent successfully!');
+        setInvitationDialogOpen(false);
+        setSelectedCustomer(null);
+        setInvitationMessage('');
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      alert('Failed to send invitation. Please try again.');
+    } finally {
+      setSendingInvitation(false);
+    }
+  };
+
   return (
-    <div className="w-full max-w-full px-4 py-8 overflow-x-hidden">
-      <div className="flex justify-between items-center mb-8">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Customer Management</h1>
+          <h1 className="text-3xl">Customer Management</h1>
           <p className="text-muted-foreground">Manage customer accounts and relationships</p>
         </div>
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -179,6 +240,64 @@ export default function CustomerManagementPage() {
                 fetchCustomers(); // Refresh the customers list
               }}
             />
+          </DialogContent>
+        </Dialog>
+
+        {/* Customer Portal Invitation Dialog */}
+        <Dialog open={invitationDialogOpen} onOpenChange={setInvitationDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <UserPlus className="h-5 w-5" />
+                <span>Send Customer Portal Invitation</span>
+              </DialogTitle>
+              <DialogDescription>
+                Send a portal access invitation to {selectedCustomer?.firstName || selectedCustomer?.companyName}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="portal">Portal Access</Label>
+                <div className="flex items-center justify-center p-4 border-2 border-dashed border-blue-200 rounded-lg bg-blue-50">
+                  <div className="text-center">
+                    <Monitor className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                    <h3 className="font-semibold text-blue-900">Customer Portal</h3>
+                    <p className="text-sm text-blue-700">Self-service portal with customer role</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Invitation will grant access to customer self-service portal
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="message">Invitation Message</Label>
+                <Textarea
+                  id="message"
+                  value={invitationMessage}
+                  onChange={(e) => setInvitationMessage(e.target.value)}
+                  className="min-h-[120px]"
+                  placeholder="Enter your invitation message..."
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setInvitationDialogOpen(false)}
+                disabled={sendingInvitation}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmitCustomerInvitation}
+                disabled={sendingInvitation}
+              >
+                {sendingInvitation ? 'Sending...' : 'Send Invitation'}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -463,6 +582,10 @@ export default function CustomerManagementPage() {
                               <DropdownMenuItem>
                                 <Mail className="mr-2 h-4 w-4" />
                                 Send Email
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSendCustomerInvitation(customer)}>
+                                <UserPlus className="mr-2 h-4 w-4" />
+                                Send Portal Invitation
                               </DropdownMenuItem>
                               <DropdownMenuItem className="text-red-600">
                                 <Trash2 className="mr-2 h-4 w-4" />

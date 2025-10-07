@@ -164,16 +164,23 @@ export default function AddUserPage() {
 
       let result;
       try {
-        result = await response.json();
-        console.log('API Response:', result);
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
+        
+        if (!responseText || responseText.trim() === '') {
+          throw new Error('Empty response from server');
+        }
+        
+        result = JSON.parse(responseText);
+        console.log('Parsed API Response:', result);
       } catch (parseError) {
         console.error('Failed to parse response as JSON:', parseError);
-        const textResponse = await response.text();
-        console.error('Raw response:', textResponse);
-        throw new Error(`Invalid response format: ${textResponse}`);
+        console.error('Response status:', response.status);
+        console.error('Response ok:', response.ok);
+        throw new Error(`Invalid response format. Status: ${response.status}`);
       }
 
-      if (result.success) {
+      if (result && result.success) {
         // Show success message with details
         const successMessage = userData.isEmployee && userData.linkedEmployee
           ? `User created and linked to employee ${userData.linkedEmployee.employeeId}`
@@ -188,11 +195,14 @@ export default function AddUserPage() {
         router.push('/users/enhanced');
       } else {
         console.error('User creation failed:', result);
-        toast.error(result.error || 'Failed to create user');
+        const errorMessage = result?.error || result?.message || 'Failed to create user';
+        const errorDetails = result?.details ? ` Details: ${JSON.stringify(result.details)}` : '';
+        toast.error(errorMessage + errorDetails);
       }
     } catch (error) {
       console.error('Error creating user:', error);
-      toast.error('Failed to create user. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create user';
+      toast.error(`Error: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }

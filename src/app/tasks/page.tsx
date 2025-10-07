@@ -314,7 +314,7 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Task Management</h1>
+          <h1 className="text-3xl tracking-tight">Task Management</h1>
           <p className="text-muted-foreground">
             Organize, track, and manage your team's tasks
           </p>

@@ -557,7 +557,7 @@ export default function CreateOrderPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create New Order</h1>
+          <h1 className="text-3xl">Create New Order</h1>
           <p className="text-muted-foreground">
             Create a new sales order for a customer
           </p>

@@ -287,24 +287,73 @@ export default function AddEmployeePage() {
         </Card>
 
         <Tabs defaultValue="personal" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="personal" className="flex items-center space-x-2">
-              <User className="h-4 w-4" />
-              <span>Personal</span>
-            </TabsTrigger>
-            <TabsTrigger value="address" className="flex items-center space-x-2">
-              <MapPin className="h-4 w-4" />
-              <span>Address</span>
-            </TabsTrigger>
-            <TabsTrigger value="emergency" className="flex items-center space-x-2">
-              <Phone className="h-4 w-4" />
-              <span>Emergency</span>
-            </TabsTrigger>
-            <TabsTrigger value="employment" className="flex items-center space-x-2">
-              <Briefcase className="h-4 w-4" />
-              <span>Employment</span>
-            </TabsTrigger>
-          </TabsList>
+          {/* Desktop Tabs */}
+          <div className="hidden md:block w-full">
+            <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-muted/50">
+              <TabsTrigger 
+                value="personal" 
+                className="flex items-center justify-center space-x-2 px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <User className="h-4 w-4" />
+                <span>Personal</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="address" 
+                className="flex items-center justify-center space-x-2 px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <MapPin className="h-4 w-4" />
+                <span>Address</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="emergency" 
+                className="flex items-center justify-center space-x-2 px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <Phone className="h-4 w-4" />
+                <span>Emergency</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="employment" 
+                className="flex items-center justify-center space-x-2 px-4 py-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <Briefcase className="h-4 w-4" />
+                <span>Employment</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* Mobile Tabs */}
+          <div className="md:hidden w-full">
+            <TabsList className="grid w-full grid-cols-2 h-auto p-1 bg-muted/50 gap-1">
+              <TabsTrigger 
+                value="personal" 
+                className="flex items-center justify-center space-x-1 px-3 py-2 text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <User className="h-3 w-3" />
+                <span>Personal</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="address" 
+                className="flex items-center justify-center space-x-1 px-3 py-2 text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <MapPin className="h-3 w-3" />
+                <span>Address</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="emergency" 
+                className="flex items-center justify-center space-x-1 px-3 py-2 text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <Phone className="h-3 w-3" />
+                <span>Emergency</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="employment" 
+                className="flex items-center justify-center space-x-1 px-3 py-2 text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              >
+                <Briefcase className="h-3 w-3" />
+                <span>Employment</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Personal Information Tab */}
           <TabsContent value="personal">

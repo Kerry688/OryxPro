@@ -17,8 +17,14 @@ export default function ClientOnlyLayout({ children }: ClientOnlyLayoutProps) {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
   
-  // Check if current path is an auth page (including signin)
-  const isAuthPage = pathname.startsWith('/auth') || pathname.startsWith('/signin');
+  // Check if current path is an auth page
+  const isAuthPage = pathname.startsWith('/auth') || pathname.startsWith('/login') || pathname.startsWith('/forgot-password') || pathname.startsWith('/reset-password');
+  
+  // Check if current path is customer portal
+  const isCustomerPortal = pathname.startsWith('/customer-portal');
+  
+  // Check if current path is employee portal
+  const isEmployeePortal = pathname.startsWith('/employee');
   
   useEffect(() => {
     setIsMounted(true);
@@ -29,10 +35,20 @@ export default function ClientOnlyLayout({ children }: ClientOnlyLayoutProps) {
     return <>{children}</>;
   }
   
+  // If it's customer portal, let the customer portal layout handle it
+  if (isCustomerPortal) {
+    return <>{children}</>;
+  }
+  
+  // If it's employee portal, let the employee portal layout handle it (if we create one)
+  if (isEmployeePortal) {
+    return <>{children}</>;
+  }
+  
   // Show loading state until component is mounted (prevents SSR issues)
   if (!isMounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FCFCFC]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-muted-foreground">Loading...</p>
@@ -41,7 +57,7 @@ export default function ClientOnlyLayout({ children }: ClientOnlyLayoutProps) {
     );
   }
   
-  // For non-auth pages, render the layout with sidebar/header
+  // For ERP pages, render the layout with sidebar/header
   return (
     <LanguageProvider>
       <SidebarProvider>

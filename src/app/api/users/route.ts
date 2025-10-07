@@ -121,7 +121,11 @@ export async function GET(request: NextRequest) {
 // POST /api/users - Create a new user
 export async function POST(request: NextRequest) {
   try {
+    console.log('Starting user creation process...');
+    
     const { db } = await connectToDatabase();
+    console.log('Database connected successfully');
+    
     const usersCollection = db.collection('users');
 
     const userData: CreateUserDTO = await request.json();
@@ -214,8 +218,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating user:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
     return NextResponse.json(
-      { success: false, error: 'Failed to create user' },
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to create user',
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      },
       { status: 500 }
     );
   }

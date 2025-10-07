@@ -72,7 +72,7 @@ export default function OrderTemplatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Order Templates</h1>
+          <h1 className="text-3xl">Order Templates</h1>
           <p className="text-muted-foreground">
             Create and manage reusable order templates for faster order creation
           </p>

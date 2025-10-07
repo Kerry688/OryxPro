@@ -221,9 +221,9 @@ export default function DailyOrdersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Daily Orders</h1>
+          <h1 className="text-3xl">Daily Orders</h1>
           <p className="text-muted-foreground">
             Manage and track your daily orders and payments
           </p>

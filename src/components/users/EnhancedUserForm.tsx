@@ -136,6 +136,9 @@ export function EnhancedUserForm({
     employeeId: user?.employeeId || '',
     password: '',
     confirmPassword: '',
+    // Portal Access
+    employeePortalAccess: user?.employeePortalAccess ?? false,
+    erpAccess: user?.erpAccess ?? false,
   });
 
   const [isEmployee, setIsEmployee] = useState(!!user?.employeeId);
@@ -600,6 +603,51 @@ export function EnhancedUserForm({
                       <SelectItem value="pending">Pending</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Portal Access Section */}
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-2">
+                    <Link className="h-4 w-4 text-muted-foreground" />
+                    <h4 className="font-medium">Portal Access</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Configure which portals this user can access
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                          <Users className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm">Employee Portal</div>
+                          <div className="text-xs text-muted-foreground">Self-service access</div>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={formData.employeePortalAccess}
+                        onCheckedChange={(checked) => setFormData({ ...formData, employeePortalAccess: checked })}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                          <Shield className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm">ERP System</div>
+                          <div className="text-xs text-muted-foreground">Full system access</div>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={formData.erpAccess}
+                        onCheckedChange={(checked) => setFormData({ ...formData, erpAccess: checked })}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {formData.roleId && (

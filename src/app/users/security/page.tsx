@@ -77,16 +77,54 @@ export default function SecurityManagementPage() {
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Resetting password for user:', selectedUser);
+      console.log('New password:', passwordData.newPassword);
       
-      setMessage({ type: 'success', text: 'Password reset successfully!' });
-      setPasswordData({ newPassword: '', confirmPassword: '', forceChange: false });
+      const response = await fetch(`/api/users/${selectedUser}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: passwordData.newPassword,
+          forcePasswordChange: passwordData.forceChange
+        }),
+      });
+
+      console.log('Password reset response status:', response.status);
       
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage(null), 3000);
+      let result;
+      try {
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
+        
+        if (!responseText || responseText.trim() === '') {
+          throw new Error('Empty response from server');
+        }
+        
+        result = JSON.parse(responseText);
+        console.log('Parsed API Response:', result);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error(`Invalid response format. Status: ${response.status}`);
+      }
+
+      if (result && result.success) {
+        setMessage({ type: 'success', text: 'Password reset successfully!' });
+        setPasswordData({ newPassword: '', confirmPassword: '', forceChange: false });
+        
+        // Clear message after 3 seconds
+        setTimeout(() => setMessage(null), 3000);
+      } else {
+        console.error('Password reset failed:', result);
+        const errorMessage = result?.error || result?.message || 'Failed to reset password';
+        const errorDetails = result?.details ? ` Details: ${JSON.stringify(result.details)}` : '';
+        setMessage({ type: 'error', text: errorMessage + errorDetails });
+      }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to reset password. Please try again.' });
+      console.error('Error resetting password:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reset password';
+      setMessage({ type: 'error', text: `Error: ${errorMessage}` });
     }
   };
 

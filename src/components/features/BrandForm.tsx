@@ -195,6 +195,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
         <div>
@@ -205,6 +206,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             onChange={(e) => setFormData({ ...formData, code: e.target.value })}
             placeholder="e.g., NIKE, APPLE, SAMSUNG"
             required
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
       </div>
@@ -216,6 +218,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           placeholder="Brand description and background..."
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
 
@@ -263,6 +266,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             value={formData.establishedYear}
             onChange={(e) => setFormData({ ...formData, establishedYear: e.target.value })}
             placeholder="e.g., 1976"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
         <div>
@@ -272,6 +276,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             value={formData.countryOfOrigin}
             onChange={(e) => setFormData({ ...formData, countryOfOrigin: e.target.value })}
             placeholder="e.g., United States"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
       </div>
@@ -297,6 +302,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
           value={formData.website}
           onChange={(e) => setFormData({ ...formData, website: e.target.value })}
           placeholder="https://www.brand.com"
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
 
@@ -309,6 +315,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             placeholder="contact@brand.com"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
         <div>
@@ -318,6 +325,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             placeholder="+1 (555) 123-4567"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
       </div>
@@ -330,6 +338,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
           value={formData.logo}
           onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
           placeholder="https://example.com/logo.png"
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
 
@@ -343,6 +352,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
               ...formData,
               address: { ...formData.address, street: e.target.value }
             })}
+            className="transition-all duration-200 rounded-lg"
           />
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -352,6 +362,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
                 ...formData,
                 address: { ...formData.address, city: e.target.value }
               })}
+              className="transition-all duration-200 rounded-lg"
             />
             <Input
               placeholder="State"
@@ -360,6 +371,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
                 ...formData,
                 address: { ...formData.address, state: e.target.value }
               })}
+              className="transition-all duration-200 rounded-lg"
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -370,6 +382,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
                 ...formData,
                 address: { ...formData.address, zipCode: e.target.value }
               })}
+              className="transition-all duration-200 rounded-lg"
             />
             <Input
               placeholder="Country"
@@ -378,6 +391,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
                 ...formData,
                 address: { ...formData.address, country: e.target.value }
               })}
+              className="transition-all duration-200 rounded-lg"
             />
           </div>
         </div>
@@ -399,6 +413,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
               socialMedia: { ...formData.socialMedia, facebook: e.target.value }
             })}
             placeholder="https://facebook.com/brand"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
         <div>
@@ -412,6 +427,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
               socialMedia: { ...formData.socialMedia, instagram: e.target.value }
             })}
             placeholder="https://instagram.com/brand"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
       </div>
@@ -428,6 +444,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
               socialMedia: { ...formData.socialMedia, twitter: e.target.value }
             })}
             placeholder="https://twitter.com/brand"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
         <div>
@@ -441,6 +458,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
               socialMedia: { ...formData.socialMedia, linkedin: e.target.value }
             })}
             placeholder="https://linkedin.com/company/brand"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
       </div>
@@ -456,6 +474,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             socialMedia: { ...formData.socialMedia, youtube: e.target.value }
           })}
           placeholder="https://youtube.com/c/brand"
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
     </div>
@@ -473,6 +492,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             contactPerson: { ...formData.contactPerson, name: e.target.value }
           })}
           placeholder="John Doe"
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
 
@@ -488,6 +508,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
               contactPerson: { ...formData.contactPerson, email: e.target.value }
             })}
             placeholder="john@brand.com"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
         <div>
@@ -500,6 +521,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
               contactPerson: { ...formData.contactPerson, phone: e.target.value }
             })}
             placeholder="+1 (555) 123-4567"
+            className="transition-all duration-200 rounded-lg"
           />
         </div>
       </div>
@@ -514,6 +536,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             contactPerson: { ...formData.contactPerson, position: e.target.value }
           })}
           placeholder="Brand Manager"
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
     </div>
@@ -531,6 +554,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             terms: { ...formData.terms, paymentTerms: e.target.value }
           })}
           placeholder="Net 30, COD, etc."
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
 
@@ -544,6 +568,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             terms: { ...formData.terms, returnPolicy: e.target.value }
           })}
           placeholder="Return policy details..."
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
 
@@ -557,6 +582,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             terms: { ...formData.terms, warrantyTerms: e.target.value }
           })}
           placeholder="Warranty terms and conditions..."
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
 
@@ -572,6 +598,7 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             terms: { ...formData.terms, minimumOrder: parseFloat(e.target.value) || 0 }
           })}
           placeholder="0.00"
+          className="transition-all duration-200 rounded-lg"
         />
       </div>
     </div>
@@ -595,8 +622,9 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
             onChange={(e) => setNewCertification(e.target.value)}
             placeholder="Add certification (e.g., ISO 9001)"
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCertification())}
+            className="transition-all duration-200 rounded-lg"
           />
-          <Button type="button" onClick={addCertification}>
+          <Button type="button" onClick={addCertification} className="transition-all duration-200 rounded-lg">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
@@ -684,10 +712,10 @@ export function BrandForm({ brand, onSubmit, onCancel }: BrandFormProps) {
       </Tabs>
 
       <div className="flex justify-end space-x-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} className="transition-all duration-200 rounded-lg">
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" className="transition-all duration-200 rounded-lg">
           {brand ? 'Update Brand' : 'Create Brand'}
         </Button>
       </div>

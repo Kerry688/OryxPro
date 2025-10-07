@@ -468,10 +468,11 @@ export default function CategoriesPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Product Categories</h1>
+          <h1 className="text-3xl">Product Categories</h1>
           <p className="text-muted-foreground">Manage your product category hierarchy</p>
         </div>
         <div className="flex gap-2">

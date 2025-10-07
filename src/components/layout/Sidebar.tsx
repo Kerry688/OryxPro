@@ -48,6 +48,7 @@ import {
   Calendar,
   Briefcase,
   ClipboardList,
+  Share2,
   Network,
   GraduationCap,
   BookOpen,
@@ -70,7 +71,11 @@ import {
   ListTodo,
   Folder,
   RefreshCw,
-  Wrench
+  Wrench,
+  Car,
+  Circle,
+  Fuel,
+  Navigation
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -87,6 +92,7 @@ export function Sidebar() {
   const { isRTL } = useLanguage();
   const { t } = useTranslation();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const pathname = usePathname();
   const { user, signOut, isLoading } = useAuth();
 
@@ -94,7 +100,7 @@ export function Sidebar() {
   if (isLoading) {
     return (
       <div className={cn(
-        "bg-[#0D0E12] border-r border-slate-700 transition-all duration-300 flex flex-col",
+        "bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col",
         isCollapsed ? "w-16" : "w-64"
       )}>
         <div className="flex items-center justify-center h-screen">
@@ -184,7 +190,6 @@ export function Sidebar() {
       icon: Package,
       children: [
         { href: '/products', label: t('allProducts') || 'All Products', icon: Package },
-        { href: '/products/manage', label: t('manageProducts') || 'Manage Products', icon: Package },
         { href: '/products/types', label: t('productTypes') || 'Product Types', icon: Package },
         { href: '/products/kits-bundles', label: t('kitsBundles') || 'Kits And Bundles', icon: Package },
         { href: '/products/service-history', label: t('serviceHistory') || 'Service History', icon: Clock },
@@ -201,6 +206,61 @@ export function Sidebar() {
         { href: '/warranties/claims', label: t('warrantyClaims') || 'Warranty Claims', icon: AlertTriangle },
       ]
     },
+    {
+      href: '/documents',
+      label: t('documents') || 'Document Center',
+      icon: FileText,
+    },
+
+    // === ASSET MANAGEMENT ===
+    {
+      href: '/assets',
+      label: t('assetManagement') || 'Asset Management',
+      icon: Package,
+      children: [
+        { href: '/assets', label: t('assetRegistry') || 'Asset Registry', icon: Package },
+        { href: '/assets/categories', label: t('assetCategories') || 'Categories', icon: Tag },
+        { href: '/assets/depreciation', label: t('depreciationManagement') || 'Depreciation', icon: DollarSign },
+        { href: '/assets/maintenance', label: t('maintenanceScheduling') || 'Maintenance', icon: Wrench },
+        { href: '/assets/analytics', label: t('assetAnalytics') || 'Analytics', icon: BarChart3 },
+      ]
+    },
+
+    // === FLEET MANAGEMENT ===
+    {
+      href: '/fleet',
+      label: t('fleetManagement') || 'Fleet Management',
+      icon: Car,
+      children: [
+        { href: '/fleet', label: t('vehicleRegistry') || 'Vehicle Registry', icon: Car },
+        { href: '/fleet/drivers', label: t('driverManagement') || 'Driver Management', icon: Users },
+        { href: '/fleet/trips', label: t('tripTracking') || 'Trip Tracking', icon: Navigation },
+        { href: '/fleet/fuel', label: t('fuelManagement') || 'Fuel Management', icon: Fuel },
+        { href: '/fleet/maintenance', label: t('fleetMaintenance') || 'Maintenance', icon: Wrench },
+        { href: '/fleet/tires', label: t('tireManagement') || 'Tire Management', icon: Circle },
+        { href: '/fleet/analytics', label: t('fleetAnalytics') || 'Analytics', icon: BarChart3 },
+      ]
+    },
+
+    // === FINANCE & ACCOUNTING ===
+    {
+      href: '/finance',
+      label: t('financeAccounting') || 'Finance & Accounting',
+      icon: DollarSign,
+      children: [
+        { href: '/finance', label: t('chartOfAccounts') || 'Chart of Accounts', icon: DollarSign },
+        { href: '/finance/journal-entries', label: t('journalEntries') || 'Journal Entries', icon: FileText },
+        { href: '/finance/periods', label: t('periodManagement') || 'Period Management', icon: Calendar },
+        { href: '/finance/currency', label: t('multiCurrency') || 'Multi-Currency', icon: DollarSign },
+        { href: '/finance/payables', label: t('accountsPayable') || 'Accounts Payable', icon: CreditCard },
+        { href: '/finance/receivables', label: t('accountsReceivable') || 'Accounts Receivable', icon: FileText },
+        { href: '/finance/cash-bank', label: t('cashBankManagement') || 'Cash & Bank', icon: Building2 },
+        { href: '/finance/assets', label: t('fixedAssetsIntegration') || 'Fixed Assets', icon: Package },
+        { href: '/finance/budgeting', label: t('budgetingPlanning') || 'Budgeting & Planning', icon: TrendingUp },
+        { href: '/finance/reports', label: t('financialReports') || 'Financial Reports', icon: BarChart3 },
+      ]
+    },
+
     {
       href: '/service-requests',
       label: t('serviceRequests') || 'Service Requests',
@@ -399,6 +459,11 @@ export function Sidebar() {
       icon: User,
     },
     {
+      href: '/customer-portal',
+      label: t('customerPortal') || 'Customer Portal',
+      icon: UserCheck,
+    },
+    {
       href: '/notifications',
       label: t('notifications') || 'Notifications',
       icon: Bell,
@@ -439,6 +504,37 @@ export function Sidebar() {
     );
   };
 
+  // Filter navigation items based on search query
+  const filteredNavigationItems = navigationItems.filter(item => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const matchesLabel = item.label.toLowerCase().includes(query);
+    const matchesChildren = item.children?.some(child => 
+      child.label.toLowerCase().includes(query)
+    );
+    
+    return matchesLabel || matchesChildren;
+  });
+
+  // Auto-expand parent items when children match search
+  const getExpandedItemsForSearch = () => {
+    if (!searchQuery.trim()) return expandedItems;
+    
+    const query = searchQuery.toLowerCase();
+    const itemsToExpand = navigationItems
+      .filter(item => 
+        item.children?.some(child => 
+          child.label.toLowerCase().includes(query)
+        )
+      )
+      .map(item => item.href);
+    
+    return [...new Set([...expandedItems, ...itemsToExpand])];
+  };
+
+  const displayExpandedItems = getExpandedItemsForSearch();
+
   // Helper function to render section divider
   const renderSectionDivider = (label: string) => (
     <div className="px-3 py-2">
@@ -461,7 +557,7 @@ export function Sidebar() {
 
   const NavItem = ({ item, level = 0 }: { item: NavItem; level?: number }) => {
     const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.includes(item.href);
+    const isExpanded = displayExpandedItems.includes(item.href);
     const active = isActive(item.href);
 
     return (
@@ -547,8 +643,8 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed top-0 z-50 h-full border-r border-slate-700 transition-all duration-300 ease-in-out shadow-lg",
-        "bg-[#0D0E12]",
+        "fixed top-0 z-50 h-full border-r border-sidebar-border transition-all duration-300 ease-in-out shadow-lg",
+        "bg-sidebar",
         isRTL ? "right-0" : "left-0",
         isCollapsed ? "w-20" : "w-64",
         isMobileOpen 
@@ -581,47 +677,38 @@ export function Sidebar() {
             )}
           </div>
 
-          {/* User Profile */}
-          {user ? (
+          {/* Search Section */}
+          {!isCollapsed ? (
             <div className="p-4 border-b border-slate-700">
-              <Link 
-                href="/profile"
-                className={cn(
-                  "flex items-center transition-all duration-300 hover:bg-slate-700/50 rounded-lg p-2 -m-2 cursor-pointer",
-                  isCollapsed ? "justify-center" : "space-x-3"
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search pages..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  >
+                    ×
+                  </button>
                 )}
-              >
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user.firstName} ${user.lastName}`} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {user.firstName?.[0]}{user.lastName?.[0]}
-                  </AvatarFallback>
-                </Avatar>
-                {!isCollapsed && (
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate text-white">
-                      {user.firstName} {user.lastName}
-                    </p>
-                    <p className="text-xs text-slate-400 truncate">
-                      {user.department}
-                    </p>
-                    <div className="flex items-center mt-1">
-                      <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-xs text-slate-400">Online</span>
-                    </div>
-                  </div>
-                )}
-              </Link>
+              </div>
             </div>
           ) : (
             <div className="p-4 border-b border-slate-700">
-              <div className="text-center">
-                <div className="animate-pulse">
-                  <div className="h-10 w-10 bg-slate-600 rounded-full mx-auto mb-2"></div>
-                  <div className="h-3 bg-slate-600 rounded w-20 mx-auto mb-1"></div>
-                  <div className="h-2 bg-slate-600 rounded w-16 mx-auto"></div>
-                </div>
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full h-10 p-0 flex items-center justify-center hover:bg-slate-700/50 text-slate-400 hover:text-white"
+                title="Search pages"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
             </div>
           )}
 
@@ -642,19 +729,28 @@ export function Sidebar() {
             "flex-1 p-4 space-y-1 scroll-smooth",
             isCollapsed ? "overflow-y-visible" : "overflow-y-auto sidebar-scrollbar"
           )}>
-            {navigationItems.map((item, index) => {
+            {searchQuery && (
+              <div className="mb-4 p-2 bg-slate-700/50 rounded-lg">
+                <p className="text-xs text-slate-300">
+                  {filteredNavigationItems.length} result(s) for "{searchQuery}"
+                </p>
+              </div>
+            )}
+            {filteredNavigationItems.map((item, index) => {
               // Add section dividers (only when not collapsed)
               const showDivider = () => {
                 if (isCollapsed) return null;
                 if (index === 1) return renderSectionDivider('Sales & Customers');
                 if (index === 3) return renderSectionDivider('Products & Catalog');
-                if (index === 5) return renderSectionDivider('Inventory & Warehouse');
-                if (index === 7) return renderSectionDivider('Purchasing & Suppliers');
-                if (index === 10) return renderSectionDivider('Locations & Facilities');
-                if (index === 14) return renderSectionDivider('Analytics & Reports');
-                if (index === 16) return renderSectionDivider('Human Resources');
-                if (index === 17) return renderSectionDivider('System & Administration');
-                if (index === 19) return renderSectionDivider('Personal');
+                if (index === 5) return renderSectionDivider('Asset Management');
+                if (index === 6) return renderSectionDivider('Fleet Management');
+                if (index === 8) return renderSectionDivider('Inventory & Warehouse');
+                if (index === 10) return renderSectionDivider('Purchasing & Suppliers');
+                if (index === 13) return renderSectionDivider('Locations & Facilities');
+                if (index === 17) return renderSectionDivider('Analytics & Reports');
+                if (index === 19) return renderSectionDivider('Human Resources');
+                if (index === 20) return renderSectionDivider('System & Administration');
+                if (index === 22) return renderSectionDivider('Personal');
                 return null;
               };
 
@@ -677,7 +773,7 @@ export function Sidebar() {
                   "w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200",
                   isCollapsed ? "justify-center" : "justify-start"
                 )}
-                onClick={signOut}
+                onClick={() => signOut()}
                 title={isCollapsed ? t('signOut') || 'Sign Out' : undefined}
               >
                 <LogOut className="h-4 w-4" />

@@ -73,7 +73,7 @@ export default function WarrantiesPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Warranty Management</h1>
+            <h1 className="text-3xl">Warranty Management</h1>
             <p className="text-gray-600">Manage warranty cards, claims, and analytics</p>
           </div>
         </div>

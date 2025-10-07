@@ -107,10 +107,11 @@ export default function InventoryManagementPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Inventory Management</h1>
+          <h1 className="text-3xl">Inventory Management</h1>
           <p className="text-muted-foreground">Track stock levels and movements across all locations</p>
         </div>
         <Dialog open={isMovementDialogOpen} onOpenChange={setIsMovementDialogOpen}>

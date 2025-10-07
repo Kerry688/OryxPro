@@ -244,7 +244,7 @@ export default function ReturnOrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Return Orders</h1>
+          <h1 className="text-3xl">Return Orders</h1>
           <p className="text-muted-foreground">
             Manage return orders, refunds, and exchanges
           </p>

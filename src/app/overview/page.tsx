@@ -42,7 +42,17 @@ import {
   Clock,
   Grid3X3,
   Bell,
-  MessageSquare
+  MessageSquare,
+  Car,
+  Circle,
+  Fuel,
+  Navigation,
+  Wrench,
+  Tag,
+  FileText,
+  CreditCard,
+  UserCheck,
+  Truck
 } from 'lucide-react';
 
 // Define the navigation structure based on the sidebar
@@ -55,6 +65,7 @@ const navigationModules = [
     color: 'bg-blue-500',
     links: [
       { href: '/', label: 'Dashboard', icon: House },
+      { href: '/overview', label: 'System Overview', icon: Grid3X3 },
       { href: '/navigation', label: 'Navigation', icon: Grid3X3 }
     ]
   },
@@ -70,6 +81,9 @@ const navigationModules = [
       { href: '/orders/pipeline', label: 'Order Pipeline', icon: ShoppingCart },
       { href: '/orders/status', label: 'Status Tracking', icon: ShoppingCart },
       { href: '/orders/templates', label: 'Order Templates', icon: ShoppingCart },
+      { href: '/orders/daily', label: 'Daily Orders', icon: ShoppingCart },
+      { href: '/return-orders', label: 'Return Orders', icon: ShoppingCart },
+      { href: '/return-orders/create', label: 'Create Return', icon: ShoppingCart },
       { href: '/pos', label: 'Point of Sale', icon: ShoppingCart },
       { href: '/track-order', label: 'Track Order', icon: ShoppingCart },
       { href: '/customers', label: 'All Customers', icon: Users },
@@ -86,14 +100,65 @@ const navigationModules = [
     color: 'bg-purple-500',
     links: [
       { href: '/products', label: 'All Products', icon: Package },
-      { href: '/products/manage', label: 'Manage Products', icon: Package },
+      { href: '/products/create', label: 'Create Product', icon: Package },
       { href: '/products/dashboard', label: 'Product Dashboard', icon: BarChart3 },
       { href: '/products/analytics', label: 'Product Analytics', icon: BarChart3 },
       { href: '/products/types', label: 'Product Types', icon: Package },
       { href: '/products/kits-bundles', label: 'Kits & Bundles', icon: Package },
+      { href: '/products/service-history', label: 'Service History', icon: Package },
       { href: '/brands', label: 'Brands', icon: Package },
       { href: '/categories', label: 'Categories', icon: Package },
-      { href: '/price-lists', label: 'Price Lists', icon: Package }
+      { href: '/price-lists', label: 'Price Lists', icon: Package },
+      { href: '/price-lists/bulk-editor', label: 'Bulk Editor', icon: Package }
+    ]
+  },
+  {
+    id: 'asset-management',
+    title: 'Asset Management',
+    description: 'Comprehensive asset lifecycle and maintenance management',
+    icon: Package,
+    color: 'bg-blue-600',
+    links: [
+      { href: '/assets', label: 'Asset Registry', icon: Package },
+      { href: '/assets/categories', label: 'Asset Categories', icon: Tag },
+      { href: '/assets/depreciation', label: 'Depreciation Management', icon: DollarSign },
+      { href: '/assets/maintenance', label: 'Maintenance Scheduling', icon: Wrench },
+      { href: '/assets/analytics', label: 'Asset Analytics', icon: BarChart3 }
+    ]
+  },
+  {
+    id: 'fleet-management',
+    title: 'Fleet Management',
+    description: 'Vehicle fleet operations, tracking, and maintenance',
+    icon: Car,
+    color: 'bg-green-600',
+    links: [
+      { href: '/fleet', label: 'Vehicle Registry', icon: Car },
+      { href: '/fleet/drivers', label: 'Driver Management', icon: Users },
+      { href: '/fleet/trips', label: 'Trip Tracking', icon: Navigation },
+      { href: '/fleet/fuel', label: 'Fuel Management', icon: Fuel },
+      { href: '/fleet/maintenance', label: 'Fleet Maintenance', icon: Wrench },
+      { href: '/fleet/tires', label: 'Tire Management', icon: Circle },
+      { href: '/fleet/analytics', label: 'Fleet Analytics', icon: BarChart3 }
+    ]
+  },
+  {
+    id: 'finance-accounting',
+    title: 'Finance & Accounting',
+    description: 'Comprehensive financial management and accounting system',
+    icon: DollarSign,
+    color: 'bg-emerald-600',
+    links: [
+      { href: '/finance', label: 'Chart of Accounts', icon: DollarSign },
+      { href: '/finance/journal-entries', label: 'Journal Entries', icon: FileText },
+      { href: '/finance/periods', label: 'Period Management', icon: Calendar },
+      { href: '/finance/currency', label: 'Multi-Currency', icon: DollarSign },
+      { href: '/finance/payables', label: 'Accounts Payable', icon: CreditCard },
+      { href: '/finance/receivables', label: 'Accounts Receivable', icon: FileText },
+      { href: '/finance/cash-bank', label: 'Cash & Bank Management', icon: Building2 },
+      { href: '/finance/assets', label: 'Fixed Assets Integration', icon: Package },
+      { href: '/finance/budgeting', label: 'Budgeting & Planning', icon: TrendingUp },
+      { href: '/finance/reports', label: 'Financial Reports', icon: BarChart3 }
     ]
   },
   {
@@ -124,6 +189,20 @@ const navigationModules = [
     ]
   },
   {
+    id: 'eta-compliance',
+    title: 'ETA Compliance',
+    description: 'Egyptian Tax Authority integration and compliance',
+    icon: DollarSign,
+    color: 'bg-yellow-500',
+    links: [
+      { href: '/eta', label: 'ETA Dashboard', icon: DollarSign },
+      { href: '/eta/products', label: 'ETA Products', icon: Package },
+      { href: '/eta/invoices', label: 'ETA Invoices', icon: DollarSign },
+      { href: '/eta/sync', label: 'ETA Synchronization', icon: DollarSign },
+      { href: '/eta/settings', label: 'ETA Settings', icon: Settings }
+    ]
+  },
+  {
     id: 'locations-facilities',
     title: 'Locations & Facilities',
     description: 'Store, warehouse, and branch management',
@@ -135,6 +214,37 @@ const navigationModules = [
       { href: '/stores/analytics', label: 'Store Analytics', icon: BarChart3 },
       { href: '/warehouses', label: 'All Warehouses', icon: Warehouse },
       { href: '/branches', label: 'Branches', icon: MapPin }
+    ]
+  },
+  {
+    id: 'crm',
+    title: 'CRM & Pipeline',
+    description: 'Customer relationship management and sales pipeline',
+    icon: Users,
+    color: 'bg-cyan-500',
+    links: [
+      { href: '/crm', label: 'CRM Dashboard', icon: BarChart3 },
+      { href: '/crm/leads', label: 'Leads', icon: Users },
+      { href: '/crm/deals', label: 'Deals', icon: DollarSign },
+      { href: '/crm/pipeline', label: 'Sales Pipeline', icon: TrendingUp },
+      { href: '/crm/quotations', label: 'Quotations', icon: DollarSign },
+      { href: '/crm/activities', label: 'Activities', icon: Calendar }
+    ]
+  },
+  {
+    id: 'tasks-projects',
+    title: 'Tasks & Projects',
+    description: 'Task management and project collaboration',
+    icon: ClipboardList,
+    color: 'bg-emerald-500',
+    links: [
+      { href: '/tasks', label: 'Task Management', icon: ClipboardList },
+      { href: '/tasks/my-tasks', label: 'My Tasks', icon: User },
+      { href: '/tasks/team', label: 'Team Tasks', icon: Users },
+      { href: '/tasks/projects', label: 'Projects', icon: Briefcase },
+      { href: '/tasks/kanban', label: 'Kanban Board', icon: Grid3X3 },
+      { href: '/tasks/calendar', label: 'Task Calendar', icon: Calendar },
+      { href: '/tasks/reports', label: 'Task Reports', icon: BarChart3 }
     ]
   },
   {
@@ -172,6 +282,21 @@ const navigationModules = [
     ]
   },
   {
+    id: 'service-warranty',
+    title: 'Service & Warranty',
+    description: 'Service requests and warranty management',
+    icon: ClipboardList,
+    color: 'bg-amber-500',
+    links: [
+      { href: '/service-requests', label: 'Service Requests', icon: ClipboardList },
+      { href: '/service-requests/schedule', label: 'Technician Schedule', icon: Calendar },
+      { href: '/service-requests/work-orders', label: 'Work Orders', icon: ClipboardList },
+      { href: '/service-requests/analytics', label: 'Service Analytics', icon: BarChart3 },
+      { href: '/warranties', label: 'Warranty Management', icon: Award },
+      { href: '/warranties/claims', label: 'Warranty Claims', icon: AlertTriangle }
+    ]
+  },
+  {
     id: 'training-development',
     title: 'Training & Development',
     description: 'Training programs, certifications, and skill development',
@@ -201,6 +326,20 @@ const navigationModules = [
     ]
   },
   {
+    id: 'customer-portal',
+    title: 'Customer Portal',
+    description: 'Self-service portal for customers',
+    icon: UserCheck,
+    color: 'bg-indigo-500',
+    links: [
+      { href: '/customer-portal', label: 'Customer Dashboard', icon: BarChart3 },
+      { href: '/customer-portal', label: 'Account Profile', icon: User },
+      { href: '/customer-portal', label: 'Orders & Quotes', icon: ShoppingCart },
+      { href: '/customer-portal', label: 'Invoices & Payments', icon: FileText },
+      { href: '/customer-portal', label: 'Shipments & Tracking', icon: Truck }
+    ]
+  },
+  {
     id: 'system-administration',
     title: 'System & Administration',
     description: 'User management and system settings',
@@ -221,23 +360,25 @@ const navigationModules = [
 
 export default function OverviewPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">OryxPro ERP Overview</h1>
-        <p className="text-xl text-gray-600">
-          Complete system navigation - Access all modules and features from this central hub
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl">Modules Overview</h1>
+          <p className="text-muted-foreground">
+            Complete system navigation - Access all modules and features from this central hub
+          </p>
+        </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Modules</p>
-                <p className="text-3xl font-bold text-gray-900">{navigationModules.length}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Modules</p>
+                <p className="text-3xl">{navigationModules.length}</p>
               </div>
               <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Database className="h-6 w-6 text-blue-600" />
@@ -250,8 +391,8 @@ export default function OverviewPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Links</p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-muted-foreground">Total Pages</p>
+                <p className="text-3xl">
                   {navigationModules.reduce((total, module) => total + module.links.length, 0)}
                 </p>
               </div>
@@ -266,8 +407,8 @@ export default function OverviewPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Active Systems</p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-muted-foreground">Active Systems</p>
+                <p className="text-3xl">
                   {navigationModules.filter(module => module.id !== 'dashboard').length}
                 </p>
               </div>
@@ -282,13 +423,13 @@ export default function OverviewPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">System Status</p>
+                <p className="text-sm font-medium text-muted-foreground">System Status</p>
                 <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
                   All Systems Operational
                 </Badge>
               </div>
               <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Database className="h-6 w-6 text-green-600" />
+                <CheckSquare className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </CardContent>
@@ -311,7 +452,7 @@ export default function OverviewPage() {
                   </CardDescription>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mt-2">{module.description}</p>
+              <p className="text-sm text-muted-foreground mt-2">{module.description}</p>
             </CardHeader>
             
             <CardContent className="pt-0">
@@ -320,9 +461,9 @@ export default function OverviewPage() {
                   <Link key={index} href={link.href}>
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start h-auto p-3 hover:bg-gray-50"
+                      className="w-full justify-start h-auto p-3 hover:bg-accent/50"
                     >
-                      <link.icon className="h-4 w-4 mr-3 text-gray-500" />
+                      <link.icon className="h-4 w-4 mr-3 text-muted-foreground" />
                       <span className="text-sm">{link.label}</span>
                     </Button>
                   </Link>
@@ -340,14 +481,17 @@ export default function OverviewPage() {
       </div>
 
       {/* Footer Info */}
-      <div className="mt-12 p-6 bg-gray-50 rounded-lg">
+      <div className="p-6 bg-muted/30 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">System Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
           <div>
             <strong>Total Pages:</strong> {navigationModules.reduce((total, module) => total + module.links.length, 0)}
           </div>
           <div>
-            <strong>Modules:</strong> {navigationModules.length}
+            <strong>Active Modules:</strong> {navigationModules.length}
+          </div>
+          <div>
+            <strong>System Version:</strong> OryxPro ERP v2.1
           </div>
           <div>
             <strong>Last Updated:</strong> {new Date().toLocaleDateString('en-US')}

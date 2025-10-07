@@ -224,7 +224,7 @@ export default function ETAProductsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">ETA Products</h1>
+          <h1 className="text-3xl">ETA Products</h1>
           <p className="text-muted-foreground">
             Manage products and their EGS codes for ETA compliance
           </p>

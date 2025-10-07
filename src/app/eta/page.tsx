@@ -170,7 +170,7 @@ export default function ETAPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Egyptian Tax Authority (ETA)</h1>
+          <h1 className="text-3xl">Egyptian Tax Authority (ETA)</h1>
           <p className="text-muted-foreground">
             Manage ETA compliance, sync products with EGS codes, and submit sales invoices
           </p>

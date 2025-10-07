@@ -246,7 +246,7 @@ export default function MyTasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+          <h1 className="text-3xl tracking-tight">My Tasks</h1>
           <p className="text-muted-foreground">
             Manage your assigned tasks and track your progress
           </p>

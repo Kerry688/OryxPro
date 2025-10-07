@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
@@ -42,40 +42,40 @@ export default function EmployeeDetailTabs({ employee, onEdit }: EmployeeDetailT
   const safeEmployee = {
     ...employee,
     employmentInfo: {
-      ...safeEmployee.employmentInfo,
-      employmentStatus: safeEmployee.employmentInfo?.employmentStatus || 'active',
-      hireDate: safeEmployee.employmentInfo?.hireDate || new Date(),
-      employmentHistory: safeEmployee.employmentInfo?.employmentHistory || []
+      ...employee?.employmentInfo,
+      employmentStatus: employee?.employmentInfo?.employmentStatus || 'active',
+      hireDate: employee?.employmentInfo?.hireDate || new Date(),
+      employmentHistory: employee?.employmentInfo?.employmentHistory || []
     },
-    documents: safeEmployee.documents || { 
+    documents: employee?.documents || { 
       otherDocuments: [],
-      resume: safeEmployee.documents?.resume,
-      contract: safeEmployee.documents?.contract,
-      idDocument: safeEmployee.documents?.idDocument,
-      passport: safeEmployee.documents?.passport,
-      workPermit: safeEmployee.documents?.workPermit,
-      visa: safeEmployee.documents?.visa,
-      healthInsurance: safeEmployee.documents?.healthInsurance,
-      birthCertificate: safeEmployee.documents?.birthCertificate,
-      marriageCertificate: safeEmployee.documents?.marriageCertificate
+      resume: employee?.documents?.resume,
+      contract: employee?.documents?.contract,
+      idDocument: employee?.documents?.idDocument,
+      passport: employee?.documents?.passport,
+      workPermit: employee?.documents?.workPermit,
+      visa: employee?.documents?.visa,
+      healthInsurance: employee?.documents?.healthInsurance,
+      birthCertificate: employee?.documents?.birthCertificate,
+      marriageCertificate: employee?.documents?.marriageCertificate
     },
-    skills: safeEmployee.skills || { 
+    skills: employee?.skills || { 
       technicalSkills: [], 
       softSkills: [], 
       certifications: [], 
       languages: [] 
     },
-    performance: safeEmployee.performance || { 
+    performance: employee?.performance || { 
       goals: [], 
       achievements: [] 
     },
-    leave: safeEmployee.leave || { 
+    leave: employee?.leave || { 
       totalLeaveDays: 21, 
       usedLeaveDays: 0, 
       remainingLeaveDays: 21, 
       leaveHistory: [] 
     },
-    healthInsurance: safeEmployee.healthInsurance || {
+    healthInsurance: employee?.healthInsurance || {
       provider: 'Not specified',
       policyNumber: 'Not specified',
       coverageType: 'individual',
@@ -88,7 +88,7 @@ export default function EmployeeDetailTabs({ employee, onEdit }: EmployeeDetailT
       beneficiaries: [],
       medicalHistory: []
     },
-    compliance: safeEmployee.compliance || {
+    compliance: employee?.compliance || {
       laborLawCompliance: {
         workPermitValid: false,
         visaValid: false,
@@ -101,7 +101,12 @@ export default function EmployeeDetailTabs({ employee, onEdit }: EmployeeDetailT
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | undefined | null) => {
+    // Handle undefined, null, or empty status
+    if (!status || typeof status !== 'string') {
+      status = 'pending'; // Default to pending if status is not provided
+    }
+
     const statusConfig = {
       'valid': { className: 'bg-green-100 text-green-800 border-green-200' },
       'expired': { className: 'bg-red-100 text-red-800 border-red-200' },

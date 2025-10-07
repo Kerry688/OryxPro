@@ -168,6 +168,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'SKU already exists' }, { status: 400 });
     }
 
+    // Helper function to safely convert to ObjectId
+    const safeObjectId = (id: string) => {
+      try {
+        // Check if it's a valid ObjectId format (24 hex characters)
+        if (typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id)) {
+          return new ObjectId(id);
+        }
+        // If not a valid ObjectId, create a new one or use a default
+        return new ObjectId();
+      } catch (error) {
+        console.warn('Invalid ObjectId format, creating new one:', id);
+        return new ObjectId();
+      }
+    };
+
     // Create base product data
     const baseProduct = {
       sku: body.sku,
@@ -181,16 +196,25 @@ export async function POST(request: NextRequest) {
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: new ObjectId(body.createdBy),
-      updatedBy: new ObjectId(body.createdBy)
+      createdBy: safeObjectId(body.createdBy),
+      updatedBy: safeObjectId(body.createdBy)
     };
 
     // Merge type-specific data
     let productData: any = { ...baseProduct };
 
     switch (body.type) {
+      case 'virtual_digital':
+        productData = { ...productData, ...body.virtualDigitalData };
+        break;
+      case 'manufactured_product':
+        productData = { ...productData, ...body.manufacturedData };
+        break;
       case 'sales_product':
         productData = { ...productData, ...body.salesData };
+        break;
+      case 'consumables':
+        productData = { ...productData, ...body.consumablesData };
         break;
       case 'print_item':
         productData = { ...productData, ...body.printData };
@@ -230,12 +254,51 @@ export async function POST(request: NextRequest) {
 // Helper function to validate product data
 function validateProductData(productData: any): string | null {
   switch (productData.type) {
+    case 'virtual_digital':
+      if (!productData.price || productData.price <= 0) {
+        return 'Price is required for virtual/digital products';
+      }
+      if (!productData.licenseType) {
+        return 'License type is required for virtual/digital products';
+      }
+      if (!productData.supportedFormats || productData.supportedFormats.length === 0) {
+        return 'Supported formats are required for virtual/digital products';
+      }
+      break;
+
+    case 'manufactured_product':
+      if (!productData.price || productData.price <= 0) {
+        return 'Price is required for manufactured products';
+      }
+      if (productData.stock === undefined || productData.stock < 0) {
+        return 'Stock quantity is required for manufactured products';
+      }
+      if (!productData.manufacturing || !productData.manufacturing.productionTime) {
+        return 'Production time is required for manufactured products';
+      }
+      break;
+
     case 'sales_product':
       if (!productData.price || productData.price <= 0) {
         return 'Price is required for sales products';
       }
       if (productData.stock === undefined || productData.stock < 0) {
         return 'Stock quantity is required for sales products';
+      }
+      break;
+
+    case 'consumables':
+      if (!productData.price || productData.price <= 0) {
+        return 'Price is required for consumables';
+      }
+      if (productData.stock === undefined || productData.stock < 0) {
+        return 'Stock quantity is required for consumables';
+      }
+      if (!productData.consumptionRate || productData.consumptionRate <= 0) {
+        return 'Consumption rate is required for consumables';
+      }
+      if (!productData.packaging || !productData.packaging.type) {
+        return 'Packaging type is required for consumables';
       }
       break;
 

@@ -325,7 +325,7 @@ export default function ProjectsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+          <h1 className="text-3xl tracking-tight">Projects</h1>
           <p className="text-muted-foreground">
             Manage and track project progress and team collaboration
           </p>

@@ -27,6 +27,7 @@ import {
   MapPin,
   MoreHorizontal,
   Eye,
+  EyeOff,
   Key,
   Activity,
   Settings,
@@ -123,11 +124,23 @@ export default function EnhancedUserManagementPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
+  const [userToResetPassword, setUserToResetPassword] = useState<User | null>(null);
 
   // Loading states
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+
+  // Reset password state
+  const [resetPasswordData, setResetPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: '',
+    forceChange: false
+  });
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Load initial data
   useEffect(() => {
@@ -263,6 +276,71 @@ export default function EnhancedUserManagementPage() {
       toast.error('Failed to delete user');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!userToResetPassword?._id) return;
+
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (resetPasswordData.newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
+
+    try {
+      setIsResettingPassword(true);
+      
+      const response = await fetch(`/api/users/${userToResetPassword._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: resetPasswordData.newPassword,
+          forcePasswordChange: resetPasswordData.forceChange
+        }),
+      });
+
+      let result;
+      try {
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
+        
+        if (!responseText || responseText.trim() === '') {
+          throw new Error('Empty response from server');
+        }
+        
+        result = JSON.parse(responseText);
+        console.log('Parsed API Response:', result);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error(`Invalid response format. Status: ${response.status}`);
+      }
+
+      if (result && result.success) {
+        toast.success('Password reset successfully!');
+        setIsResetPasswordDialogOpen(false);
+        setUserToResetPassword(null);
+        setResetPasswordData({ newPassword: '', confirmPassword: '', forceChange: false });
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+      } else {
+        console.error('Password reset failed:', result);
+        const errorMessage = result?.error || result?.message || 'Failed to reset password';
+        const errorDetails = result?.details ? ` Details: ${JSON.stringify(result.details)}` : '';
+        toast.error(errorMessage + errorDetails);
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reset password';
+      toast.error(`Error: ${errorMessage}`);
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -570,7 +648,10 @@ export default function EnhancedUserManagementPage() {
                               <Edit className="mr-2 h-4 w-4" />
                               Edit User
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setUserToResetPassword(user);
+                              setIsResetPasswordDialogOpen(true);
+                            }}>
                               <Key className="mr-2 h-4 w-4" />
                               Reset Password
                             </DropdownMenuItem>
@@ -705,6 +786,109 @@ export default function EnhancedUserManagementPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Reset password for {userToResetPassword?.firstName} {userToResetPassword?.lastName}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <h3 className="font-medium mb-2">{userToResetPassword?.firstName} {userToResetPassword?.lastName}</h3>
+              <p className="text-sm text-muted-foreground">{userToResetPassword?.email}</p>
+            </div>
+
+            <div>
+              <Label htmlFor="newPassword">New Password</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={resetPasswordData.newPassword}
+                  onChange={(e) => setResetPasswordData({ ...resetPasswordData, newPassword: e.target.value })}
+                  placeholder="Enter new password"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={resetPasswordData.confirmPassword}
+                  onChange={(e) => setResetPasswordData({ ...resetPasswordData, confirmPassword: e.target.value })}
+                  placeholder="Confirm new password"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="forceChange"
+                checked={resetPasswordData.forceChange}
+                onCheckedChange={(checked) => setResetPasswordData({ ...resetPasswordData, forceChange: checked })}
+              />
+              <Label htmlFor="forceChange">Force password change on next login</Label>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsResetPasswordDialogOpen(false);
+                  setUserToResetPassword(null);
+                  setResetPasswordData({ newPassword: '', confirmPassword: '', forceChange: false });
+                  setShowNewPassword(false);
+                  setShowConfirmPassword(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleResetPassword}
+                disabled={isResettingPassword}
+              >
+                {isResettingPassword ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                    Resetting...
+                  </>
+                ) : (
+                  <>
+                    <Key className="h-4 w-4 mr-2" />
+                    Reset Password
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

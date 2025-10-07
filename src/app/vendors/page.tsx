@@ -147,7 +147,7 @@ export default function VendorManagementPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Vendor Management</h1>
+          <h1 className="text-3xl">Vendor Management</h1>
           <p className="text-muted-foreground">Manage vendor accounts and relationships</p>
         </div>
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

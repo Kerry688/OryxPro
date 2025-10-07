@@ -1,14 +1,17 @@
-import jwt from 'jsonwebtoken';
+import { SignJWT, jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'oryxpro-super-secret-jwt-key-2024-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 export interface JWTPayload {
   userId: string;
-  username: string;
   email: string;
-  roleId: string;
+  userType: string;
+  role: string;
+  loginPortal: string;
   branchId?: string;
+  customerId?: string;
+  employeeId?: string;
   iat?: number;
   exp?: number;
 }
@@ -18,8 +21,14 @@ export interface JWTPayload {
  * @param payload - The user data to encode in the token
  * @returns JWT token string
  */
-export function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+export async function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): Promise<string> {
+  const secret = new TextEncoder().encode(JWT_SECRET);
+  const jwt = await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRES_IN)
+    .sign(secret);
+  return jwt;
 }
 
 /**
@@ -27,9 +36,11 @@ export function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string 
  * @param token - The JWT token to verify
  * @returns Decoded payload or null if invalid
  */
-export function verifyToken(token: string): JWTPayload | null {
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    return payload as JWTPayload;
   } catch (error) {
     console.error('Token verification failed:', error);
     return null;

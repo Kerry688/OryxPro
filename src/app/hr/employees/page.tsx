@@ -21,7 +21,10 @@ import {
   Calendar,
   Building2,
   DollarSign,
-  CheckCircle
+  CheckCircle,
+  UserPlus,
+  Shield,
+  Monitor
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -38,6 +41,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Employee } from '@/lib/models/employee';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils/date';
@@ -48,6 +62,13 @@ export default function EmployeesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  
+  // Portal invitation state
+  const [invitationDialogOpen, setInvitationDialogOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedPortal, setSelectedPortal] = useState('');
+  const [invitationMessage, setInvitationMessage] = useState('');
+  const [sendingInvitation, setSendingInvitation] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -161,6 +182,83 @@ export default function EmployeesPage() {
     );
   };
 
+  // Portal invitation functions
+  const handleSendInvitation = async (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setInvitationDialogOpen(true);
+    setSelectedPortal('employee_portal'); // Auto-set to employee portal
+    setInvitationMessage(`Hello ${employee.personalInfo.firstName},\n\nWe're excited to invite you to join our employee portal where you can access your personal information, payslips, leave requests, and more.\n\nPlease use your employee credentials to log in.\n\nBest regards,\nHR Team`);
+  };
+
+  const handleSubmitInvitation = async () => {
+    if (!selectedEmployee) {
+      alert('Employee information is missing');
+      return;
+    }
+
+    // Always use employee portal with employee role
+    const portal = 'employee_portal';
+    const role = 'employee';
+
+    setSendingInvitation(true);
+    try {
+      const response = await fetch('/api/users/send-invitation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: selectedEmployee.personalInfo.email,
+          firstName: selectedEmployee.personalInfo.firstName,
+          lastName: selectedEmployee.personalInfo.lastName,
+          portal: portal,
+          role: role,
+          employeeId: selectedEmployee.employeeId,
+          message: invitationMessage
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('Invitation sent successfully!');
+        setInvitationDialogOpen(false);
+        setSelectedEmployee(null);
+        setSelectedPortal('');
+        setInvitationMessage('');
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      alert('Failed to send invitation. Please try again.');
+    } finally {
+      setSendingInvitation(false);
+    }
+  };
+
+  const getPortalAccessBadge = (employee: Employee) => {
+    // Check if employee has portal access (this would come from user data)
+    // For now, we'll show a default state
+    const hasAccess = false; // This would be determined by checking if user exists
+    
+    if (hasAccess) {
+      return (
+        <Badge variant="default" className="bg-green-100 text-green-800">
+          <Shield className="w-3 h-3 mr-1" />
+          Has Access
+        </Badge>
+      );
+    }
+    
+    return (
+      <Badge variant="secondary" className="bg-gray-100 text-gray-600">
+        <UserPlus className="w-3 h-3 mr-1" />
+        No Access
+      </Badge>
+    );
+  };
+
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = searchQuery === '' || 
       employee.personalInfo.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -193,7 +291,7 @@ export default function EmployeesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Employees</h1>
+          <h1 className="text-3xl">Employees</h1>
           <p className="text-muted-foreground">Manage your workforce</p>
         </div>
         <Button asChild>
@@ -307,6 +405,7 @@ export default function EmployeesPage() {
                   <TableHead>Status</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Hire Date</TableHead>
+                  <TableHead>Portal Access</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -350,6 +449,20 @@ export default function EmployeesPage() {
                       <div className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span>{formatDate(employee.employmentInfo.hireDate)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        {getPortalAccessBadge(employee)}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleSendInvitation(employee)}
+                          className="h-6 px-2 text-xs"
+                        >
+                          <UserPlus className="w-3 h-3 mr-1" />
+                          Send Invite
+                        </Button>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -402,6 +515,64 @@ export default function EmployeesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Portal Invitation Dialog */}
+      <Dialog open={invitationDialogOpen} onOpenChange={setInvitationDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <UserPlus className="h-5 w-5" />
+              <span>Send Portal Invitation</span>
+            </DialogTitle>
+            <DialogDescription>
+              Send a portal access invitation to {selectedEmployee?.personalInfo.firstName} {selectedEmployee?.personalInfo.lastName}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="portal">Portal Access</Label>
+              <div className="flex items-center justify-center p-4 border-2 border-dashed border-blue-200 rounded-lg bg-blue-50">
+                <div className="text-center">
+                  <Monitor className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                  <h3 className="font-semibold text-blue-900">Employee Portal</h3>
+                  <p className="text-sm text-blue-700">Self-service portal with employee role</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Invitation will grant access to employee self-service portal
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="message">Invitation Message</Label>
+              <Textarea
+                id="message"
+                value={invitationMessage}
+                onChange={(e) => setInvitationMessage(e.target.value)}
+                className="min-h-[120px]"
+                placeholder="Enter your invitation message..."
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setInvitationDialogOpen(false)}
+              disabled={sendingInvitation}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmitInvitation}
+              disabled={sendingInvitation}
+            >
+              {sendingInvitation ? 'Sending...' : 'Send Invitation'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

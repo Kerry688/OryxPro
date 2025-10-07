@@ -362,7 +362,7 @@ export default function CreatePurchaseOrderPage() {
             <span>Back</span>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold flex items-center space-x-2">
+            <h1 className="text-3xl flex items-center space-x-2">
               <ShoppingCart className="h-8 w-8" />
               <span>Create Purchase Order</span>
             </h1>

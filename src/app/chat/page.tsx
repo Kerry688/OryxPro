@@ -43,6 +43,28 @@ export default function ChatPage() {
   const [isCreateChatOpen, setIsCreateChatOpen] = useState(false);
   const [isAddParticipantsOpen, setIsAddParticipantsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [userStatuses, setUserStatuses] = useState<{[key: string]: 'online' | 'offline'}>({});
+
+  // Fetch all users
+  const fetchAllUsers = async () => {
+    try {
+      const response = await fetch('/api/users');
+      const data = await response.json();
+      if (data.success) {
+        setAllUsers(data.data || []);
+        // Simulate user statuses (in a real app, this would come from WebSocket or polling)
+        const statuses: {[key: string]: 'online' | 'offline'} = {};
+        data.data?.forEach((user: any) => {
+          // Randomly assign online/offline status for demo
+          statuses[user._id.toString()] = Math.random() > 0.3 ? 'online' : 'offline';
+        });
+        setUserStatuses(statuses);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+  };
 
   // Fetch chats
   const fetchChats = async () => {
@@ -185,6 +207,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     fetchChats();
+    fetchAllUsers();
   }, []);
 
   useEffect(() => {
@@ -219,6 +242,61 @@ export default function ChatPage() {
   const getMessageStatusIcon = (message: Message) => {
     // This would typically check if the message was read by all participants
     return <CheckCircle2 className="h-3 w-3 text-blue-500" />;
+  };
+
+  // Create direct message with a user
+  const createDirectMessage = async (userId: string, userName: string) => {
+    try {
+      const chatData: CreateChatData = {
+        name: userName,
+        type: 'direct',
+        participants: [userId]
+      };
+
+      const response = await fetch('/api/chats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(chatData),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Check if chat already exists with this user
+        const existingChat = chats.find(chat => 
+          chat.type === 'direct' && 
+          chat.participants.length === 2 && 
+          chat.participants.some(p => p.userId === userId)
+        );
+        
+        if (existingChat) {
+          setSelectedChat(existingChat);
+        } else {
+          setChats(prev => [data.data, ...prev]);
+          setSelectedChat(data.data);
+        }
+        
+        toast({
+          title: "Chat started",
+          description: `Started conversation with ${userName}`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || 'Failed to create chat',
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error('Failed to create direct message:', err);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -302,6 +380,62 @@ export default function ChatPage() {
             <div className="p-4 text-center text-muted-foreground">
               Loading chats...
             </div>
+          ) : activeTab === 'direct' ? (
+            // Show all users for direct messages
+            <div className="space-y-1 p-2">
+              <div className="px-2 py-1">
+                <h4 className="text-sm font-medium text-muted-foreground">All Users</h4>
+              </div>
+              {allUsers.map((user) => {
+                const status = userStatuses[user._id.toString()] || 'offline';
+                return (
+                  <div
+                    key={user._id}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-muted`}
+                    onClick={() => createDirectMessage(user._id.toString(), `${user.firstName} ${user.lastName}`)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={user.avatar} />
+                          <AvatarFallback>
+                            {user.firstName?.[0]}{user.lastName?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        {/* Status indicator */}
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background ${
+                          status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                        }`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium truncate">
+                            {user.firstName} {user.lastName}
+                          </h3>
+                          <Badge 
+                            variant={status === 'online' ? 'default' : 'secondary'} 
+                            className="text-xs"
+                          >
+                            {status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs text-muted-foreground">
+                            {user.position || 'No position'}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Click to start chat
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           ) : filteredChats.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
               No chats found
@@ -321,12 +455,20 @@ export default function ChatPage() {
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0">
                       {chat.type === 'direct' ? (
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={chat.participants[0]?.userAvatar} />
-                          <AvatarFallback>
-                            {chat.participants[0]?.userName?.[0] || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="relative">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={chat.participants[0]?.userAvatar} />
+                            <AvatarFallback>
+                              {chat.participants[0]?.userName?.[0] || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          {/* Status indicator for direct chats */}
+                          {chat.participants[0] && (
+                            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background ${
+                              userStatuses[chat.participants[0].userId] === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                            }`} />
+                          )}
+                        </div>
                       ) : (
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                           {getChatIcon(chat)}
@@ -483,9 +625,69 @@ function CreateChatForm({ onSubmit }: { onSubmit: (data: CreateChatData) => void
     type: 'direct' as ChatType,
     participants: [] as string[]
   });
+  const [users, setUsers] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch users for selection
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/users');
+        const data = await response.json();
+        if (data.success) {
+          setUsers(data.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Filter users based on search query
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const filtered = users.filter(user =>
+        user.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    } else {
+      setFilteredUsers([]);
+    }
+  }, [searchQuery, users]);
+
+  const addParticipant = (userId: string) => {
+    if (!formData.participants.includes(userId)) {
+      setFormData({ ...formData, participants: [...formData.participants, userId] });
+    }
+    setSearchQuery('');
+  };
+
+  const removeParticipant = (userId: string) => {
+    setFormData({
+      ...formData,
+      participants: formData.participants.filter(id => id !== userId)
+    });
+  };
+
+  const getSelectedUserDetails = () => {
+    return users.filter(user => formData.participants.includes(user._id.toString()));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.participants.length === 0) {
+      alert('Please select at least one participant');
+      return;
+    }
     onSubmit(formData);
   };
 
@@ -522,12 +724,110 @@ function CreateChatForm({ onSubmit }: { onSubmit: (data: CreateChatData) => void
           <option value="channel">Channel</option>
         </select>
       </div>
+
+      {/* Participants Selection */}
+      <div>
+        <label className="text-sm font-medium">Participants</label>
+        <div className="space-y-2">
+          {/* Search for users */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search users to add..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Search results */}
+          {searchQuery && (
+            <div className="border rounded-lg p-2 max-h-32 overflow-y-auto">
+              {loading ? (
+                <div className="text-sm text-muted-foreground">Loading users...</div>
+              ) : filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
+                  <div
+                    key={user._id}
+                    className="flex items-center justify-between p-2 hover:bg-muted rounded cursor-pointer"
+                    onClick={() => addParticipant(user._id.toString())}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={user.avatar} />
+                        <AvatarFallback className="text-xs">
+                          {user.firstName?.[0]}{user.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="text-sm font-medium">
+                          {user.firstName} {user.lastName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{user.email}</div>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addParticipant(user._id.toString());
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-muted-foreground">No users found</div>
+              )}
+            </div>
+          )}
+
+          {/* Selected participants */}
+          {formData.participants.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-sm font-medium">Selected Participants:</div>
+              {getSelectedUserDetails().map((user) => (
+                <div
+                  key={user._id}
+                  className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={user.avatar} />
+                      <AvatarFallback className="text-xs">
+                        {user.firstName?.[0]}{user.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-medium">
+                        {user.firstName} {user.lastName}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeParticipant(user._id.toString())}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       
       <div className="flex justify-end space-x-2">
         <Button type="button" variant="outline">
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={formData.participants.length === 0}>
           Create Chat
         </Button>
       </div>

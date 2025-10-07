@@ -228,7 +228,7 @@ export default function TaskCalendarPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Task Calendar</h1>
+          <h1 className="text-3xl tracking-tight">Task Calendar</h1>
           <p className="text-muted-foreground">
             Visual calendar view of your tasks and deadlines
           </p>

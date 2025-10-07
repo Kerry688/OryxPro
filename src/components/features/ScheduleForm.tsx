@@ -149,6 +149,14 @@ export function ScheduleForm({ schedule, onSave, onCancel, technicians }: Schedu
   };
 
   const handleServiceRequestChange = (serviceRequestId: string) => {
+    if (serviceRequestId === 'none') {
+      form.setValue('customerId', '');
+      form.setValue('customerName', '');
+      form.setValue('title', '');
+      form.setValue('description', '');
+      return;
+    }
+    
     const serviceRequest = serviceRequests.find(sr => sr._id === serviceRequestId);
     if (serviceRequest) {
       form.setValue('customerId', serviceRequest.customerId);
@@ -159,6 +167,14 @@ export function ScheduleForm({ schedule, onSave, onCancel, technicians }: Schedu
   };
 
   const handleWorkOrderChange = (workOrderId: string) => {
+    if (workOrderId === 'none') {
+      form.setValue('customerId', '');
+      form.setValue('customerName', '');
+      form.setValue('title', '');
+      form.setValue('description', '');
+      return;
+    }
+    
     const workOrder = workOrders.find(wo => wo._id === workOrderId);
     if (workOrder) {
       form.setValue('customerId', workOrder.customerId);
@@ -168,6 +184,11 @@ export function ScheduleForm({ schedule, onSave, onCancel, technicians }: Schedu
   };
 
   const handleCustomerChange = (customerId: string) => {
+    if (customerId === 'none') {
+      form.setValue('customerName', '');
+      return;
+    }
+    
     const customer = customers.find(c => c._id === customerId);
     if (customer) {
       form.setValue('customerName', customer.name);
@@ -496,7 +517,7 @@ export function ScheduleForm({ schedule, onSave, onCancel, technicians }: Schedu
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No service request</SelectItem>
+                        <SelectItem value="none">No service request</SelectItem>
                         {serviceRequests.map((request) => (
                           <SelectItem key={request._id} value={request._id}>
                             {request.requestNumber} - {request.customerName}
@@ -525,7 +546,7 @@ export function ScheduleForm({ schedule, onSave, onCancel, technicians }: Schedu
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No work order</SelectItem>
+                        <SelectItem value="none">No work order</SelectItem>
                         {workOrders.map((order) => (
                           <SelectItem key={order._id} value={order._id}>
                             {order.workOrderNumber} - {order.customerName}
@@ -556,7 +577,7 @@ export function ScheduleForm({ schedule, onSave, onCancel, technicians }: Schedu
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No customer</SelectItem>
+                        <SelectItem value="none">No customer</SelectItem>
                         {customers.map((customer) => (
                           <SelectItem key={customer._id} value={customer._id}>
                             {customer.name} ({customer.email})

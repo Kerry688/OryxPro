@@ -159,7 +159,7 @@ export default function HRDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">HR Dashboard</h1>
+          <h1 className="text-3xl">HR Dashboard</h1>
           <p className="text-muted-foreground">Manage your human resources effectively</p>
         </div>
         <div className="flex items-center space-x-2">

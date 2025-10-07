@@ -106,11 +106,13 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
-          Configure your application settings and preferences
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl">Settings</h1>
+          <p className="text-muted-foreground">
+            Configure your application settings and preferences
+          </p>
+        </div>
       </div>
 
       {/* Settings Categories */}

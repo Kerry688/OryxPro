@@ -8,7 +8,10 @@ export async function GET(request: NextRequest) {
     const db = await connectToMongoDB();
 
     const productTypes: ProductType[] = [
+      'virtual_digital',
+      'manufactured_product',
       'sales_product',
+      'consumables',
       'print_item', 
       'service',
       'raw_material',
@@ -30,7 +33,7 @@ export async function GET(request: NextRequest) {
 
         // Get revenue for types that have pricing
         let totalRevenue = 0;
-        if (['sales_product', 'print_item', 'service', 'kit_bundle'].includes(type)) {
+        if (['virtual_digital', 'manufactured_product', 'sales_product', 'consumables', 'print_item', 'service', 'kit_bundle'].includes(type)) {
           const priceField = type === 'service' ? 'basePrice' : 'price';
           const revenueResult = await db.collection('products').aggregate([
             { $match: { type, isActive: true } },
@@ -62,7 +65,10 @@ export async function GET(request: NextRequest) {
 // Helper functions
 function getProductTypeName(type: ProductType): string {
   const names = {
+    'virtual_digital': 'Virtual / Digital Products',
+    'manufactured_product': 'Manufactured Products (Finished Goods)',
     'sales_product': 'Sales Products',
+    'consumables': 'Consumables',
     'print_item': 'Print Items',
     'service': 'Services',
     'raw_material': 'Raw Materials',
@@ -74,7 +80,10 @@ function getProductTypeName(type: ProductType): string {
 
 function getProductTypeDescription(type: ProductType): string {
   const descriptions = {
+    'virtual_digital': 'Digital products and downloadable content with licensing options',
+    'manufactured_product': 'Finished goods from production with manufacturing details',
     'sales_product': 'Regular retail products for direct sale to customers',
+    'consumables': 'Items that get used up or consumed with shelf life tracking',
     'print_item': 'Print-on-demand products with customizable options',
     'service': 'Service-based offerings including consultations and installations',
     'raw_material': 'Materials and supplies used in production processes',
@@ -86,7 +95,10 @@ function getProductTypeDescription(type: ProductType): string {
 
 function getProductTypeIcon(type: ProductType): string {
   const icons = {
+    'virtual_digital': 'Monitor',
+    'manufactured_product': 'Factory',
     'sales_product': 'Package',
+    'consumables': 'Droplets',
     'print_item': 'Printer',
     'service': 'Wrench',
     'raw_material': 'Package2',

@@ -70,10 +70,13 @@ export default function DashboardPage() {
   const outboundMovements = stockMovements.filter(m => m.type === 'outbound').length;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">ERP Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your products and inventory management</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl">ERP Dashboard</h1>
+          <p className="text-muted-foreground">Overview of your products and inventory management</p>
+        </div>
       </div>
 
       {/* Key Metrics */}
